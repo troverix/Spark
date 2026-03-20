@@ -189,7 +189,7 @@ textarea::placeholder{color:var(--muted);font-style:italic;}
 .dash-blur-wrap{position:relative;}
 .dash-blur{filter:blur(5px);pointer-events:none;user-select:none;}
 .dash-unlock-btn-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:10;}
-.dash-unlock-btn{font-family:"Orbitron",monospace;font-weight:900;font-size:clamp(11px,3vw,13px);letter-spacing:0.08em;text-transform:uppercase;padding:16px 20px;background:#0d0d2b;border:2px solid var(--cyan);color:var(--cyan);cursor:pointer;touch-action:manipulation;text-align:center;box-shadow:0 0 30px rgba(0,245,255,0.25);max-width:280px;width:90%;line-height:1.4;}
+.dash-unlock-btn{font-family:"Orbitron",monospace;font-weight:900;font-size:clamp(10px,2.8vw,12px);letter-spacing:0.08em;text-transform:uppercase;padding:20px 24px;background:rgba(7,7,20,0.95);border:2px solid var(--cyan);color:var(--cyan);cursor:pointer;touch-action:manipulation;text-align:center;box-shadow:0 0 40px rgba(0,245,255,0.3),inset 0 0 20px rgba(0,245,255,0.05);max-width:300px;width:90%;line-height:1;display:flex;flex-direction:column;align-items:center;gap:10px;}
 </style>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#00f5ff">
@@ -344,7 +344,7 @@ var TX = {
     pdfBtn: 'PDF',
     copyBtn: 'COPIAR',
     copied: 'COPIADO!',
-    disclaimer: 'SIMULACAO FICTICIA. Gerada por IA. Fatores reais como mercado, execucao e timing podem alterar o resultado. Use como reflexao, nao como decisao definitiva.',
+    disclaimer: 'SIMULACAO BASEADA EM IA. Dados de mercado e tendencias reais como referencia. Fatores como execucao e timing podem alterar o resultado. Use como ferramenta de reflexao, nao como decisao definitiva.',
     footer: 'SIMLY · SIMULATE BEFORE YOU BUILD · POWERED BY CLAUDE',
     dhyp: 'HIPOTESE SIMULADA',
     dhyps: 'SOLUCAO SIMULADA',
@@ -447,7 +447,7 @@ TX.en = {
   pdfBtn: 'PDF',
   copyBtn: 'COPY',
   copied: 'COPIED!',
-  disclaimer: 'FICTIONAL SIMULATION. AI-generated. Real factors like market, execution and timing may alter the result. Use as reflection, not final decision.',
+  disclaimer: 'AI-BASED SIMULATION. Real market data and trends as reference. Factors like execution and timing may alter the result. Use as a reflection tool, not a definitive decision.',
   footer: 'SIMLY · SIMULATE BEFORE YOU BUILD · POWERED BY CLAUDE',
   dhyp: 'SIMULATED HYPOTHESIS',
   dhyps: 'SIMULATED SOLUTION',
@@ -866,7 +866,7 @@ function showDashboard(a) {
     + '<div class="dash-sec"><div class="dash-sec-lbl">' + drisk + '</div>' + risks + '</div>'
     + '<div class="dash-sec"><div class="dash-sec-lbl">' + dpaths + '</div>' + sols + '</div>'
     + (window._paid ? '' : '</div>')
-    + (window._paid ? '' : '<div class="dash-unlock-btn-wrap"><button class="dash-unlock-btn" onclick="openPaywall()">🔒 ' + (lang==='pt' ? 'DESBLOQUEAR AN\u00c1LISE COMPLETA<br>pontos fortes · riscos · caminhos · PDF<br><span style="font-size:13px;color:var(--muted2)">3 simulações por</span> <span style="font-size:18px;color:var(--text)">R$9,90</span>' : 'UNLOCK FULL ANALYSIS<br>strengths · risks · paths · PDF<br><span style="font-size:13px;color:var(--muted2)">3 simulations for</span> <span style="font-size:18px;color:var(--text)">R$9.90</span>') + '</button></div></div>')
+    + (window._paid ? '' : '<div class="dash-unlock-btn-wrap">' + '<button class="dash-unlock-btn" onclick="openPaywall()">' + '<span style="font-size:18px">🔒</span>' + '<span style="font-size:clamp(11px,3vw,13px);letter-spacing:0.1em">' + (lang==='pt' ? 'DESBLOQUEAR AN\u00c1LISE COMPLETA' : 'UNLOCK FULL ANALYSIS') + '</span>' + '<span style="font-family:Share Tech Mono,monospace;font-size:9px;letter-spacing:0.15em;color:var(--muted2);text-transform:uppercase">' + (lang==='pt' ? 'pontos fortes · riscos · caminhos · PDF' : 'strengths · risks · paths · PDF') + '</span>' + '<span style="display:flex;align-items:baseline;gap:6px;margin-top:2px">'   + '<span style="font-family:Share Tech Mono,monospace;font-size:10px;color:var(--muted2)">' + (lang==='pt' ? '3 simulações por' : '3 simulations for') + '</span>'   + '<span style="font-size:22px;color:var(--text);letter-spacing:0">' + (lang==='pt' ? 'R$9,90' : 'R$9.90') + '</span>' + '</span>' + '</button></div></div>')
     + '</div>'
     + '<div class="disclaimer"><p>' + tx.disclaimer + '</p></div>'
     + (window._paid
