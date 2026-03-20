@@ -269,10 +269,10 @@ var TX = {
     introDesc: 'Simly coloca sua ideia numa simulacao interativa com dados reais de mercado e um veredicto honesto.',
     introDescs: 'Simly simula sua solucao antes que voce invista tempo e energia na direcao errada.',
     steps: [
-      {t:'The Spark + Objective', d:'Descreva sua ideia e o que quer atingir.'},
+      {t:'A Ideia + Objetivo', d:'Descreva sua ideia e o que quer atingir.'},
       {t:'Hipotese', d:'A IA gera uma hipotese testavel. Aceite ou peca outra.'},
       {t:'Simulacao RPG', d:'4 capitulos. Um protagonista usando sua solucao. Voce decide.'},
-      {t:'Veredicto + Analise', d:'Score com dados reais. FUNDED ou DRAWING BOARD.'}
+      {t:'Veredicto + Analise', d:'Score com dados reais. APROVADA ou DE VOLTA AO INICIO.'}
     ],
     stepss: [
       {t:'O Problema + O que Preciso', d:'Descreva o problema e o resultado que precisa.'},
@@ -283,7 +283,7 @@ var TX = {
     rpgNote: 'O RPG e uma experiencia narrativa. O score e calculado de forma independente.',
     ctaLabel: 'PRONTO PARA SIMULAR?',
     startBtn: 'INICIAR SIMULACAO',
-    sparkTitle: 'THE SPARK',
+    sparkTitle: 'A IDEIA',
     sparkExplain: 'A ideia crua, sem filtros. Escreva exatamente como ela veio.',
     sparkEx: '"E se as pessoas pudessem comprar e vender ideias como acoes?"',
     sparkLabel: 'SUA IDEIA',
@@ -292,7 +292,7 @@ var TX = {
     sparkExS: '"Perco horas em reunioes que nao geram decisoes."',
     sparkLabelS: 'SEU PROBLEMA',
     ph: 'Digite aqui...',
-    objTitle: 'OBJECTIVE',
+    objTitle: 'OBJETIVO',
     objExplain: 'Por que essa ideia importa? Qual mudanca voce quer ver no mundo?',
     objEx: '"Quero que pessoas criativas possam gerar valor com suas ideias."',
     objLabel: 'SEU OBJETIVO',
@@ -328,10 +328,10 @@ var TX = {
     drawingPre: 'AINDA NAO',
     fundedPres: 'SOLUCAO ENCONTRADA',
     drawingPres: 'CONTINUA ABERTO',
-    fundedWord: 'FUNDED',
-    drawingWord: 'BACK TO THE DRAWING BOARD',
-    fundedWordS: 'SOLVED',
-    drawingWordS: 'DEAD END',
+    fundedWord: 'APROVADA',
+    drawingWord: 'DE VOLTA AO INÍCIO',
+    fundedWordS: 'RESOLVIDA',
+    drawingWordS: 'SEM SAÍDA',
     fundedMsg: 'Sua ideia sobreviveu a simulacao. O caminho existe, agora e sobre execucao.',
     drawingMsg: 'A simulacao revelou desafios reais. Cada obstaculo identificado e uma vantagem.',
     fundedMsgS: 'A simulacao validou a solucao. O caminho esta mais claro.',
@@ -722,7 +722,9 @@ async function showRPG(a) {
       ? 'Narre capitulo ' + (chapNum+1) + '/4. A solucao JA EXISTE no mundo. Mostre na vida real com sucessos e dificuldades.\n\nSolucao: '
       : 'Narrate chapter ' + (chapNum+1) + '/4. Solution ALREADY EXISTS. Show in real life with successes and difficulties.\n\nSolution: ')
       + state.outcome + '\n' + storyCtx + '\n' + histCtx + '\n\n' + guide
-      + '\n\nMax 60 words in narrative.\nJSON no backticks:\n{"narrative":"2 sentences by \n\n","isFinal":' + isFS + ',"verdict":' + (isFinal?'"1 verdict sentence"':'null') + ',"choices":' + choicesStr + '}';
+      + (lang==='pt'
+        ? '\n\nMax 60 palavras na narrativa. Responda SEMPRE em portugues.\nJSON sem backticks:\n{"narrative":"2 frases","isFinal":' + isFS + ',"verdict":' + (isFinal?'"1 frase de veredicto"':'null') + ',"choices":' + choicesStr + '}'
+        : '\n\nMax 60 words in narrative.\nJSON no backticks:\n{"narrative":"2 sentences","isFinal":' + isFS + ',"verdict":' + (isFinal?'"1 verdict sentence"':'null') + ',"choices":' + choicesStr + '}');
 
     var sc = await api(p, 250);
     window._ch = sc.choices || [];
