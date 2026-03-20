@@ -192,7 +192,10 @@ textarea::placeholder{color:var(--muted);font-style:italic;}
 .pw-price span{font-size:14px;color:var(--muted2);font-weight:400;}
 .pw-btn{width:100%;font-family:"Orbitron",monospace;font-weight:900;font-size:14px;letter-spacing:0.1em;text-transform:uppercase;padding:18px;background:rgba(0,245,255,0.1);border:2px solid var(--cyan);color:var(--cyan);cursor:pointer;touch-action:manipulation;}
 .pw-close{position:absolute;top:14px;right:16px;font-family:"Share Tech Mono",monospace;font-size:18px;color:var(--muted);background:transparent;border:none;cursor:pointer;padding:4px 8px;}
+.dash-blur-wrap{position:relative;}
 .dash-blur{filter:blur(5px);pointer-events:none;user-select:none;}
+.dash-unlock-btn-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:10;}
+.dash-unlock-btn{font-family:"Orbitron",monospace;font-weight:900;font-size:clamp(11px,3vw,13px);letter-spacing:0.08em;text-transform:uppercase;padding:16px 20px;background:#0d0d2b;border:2px solid var(--cyan);color:var(--cyan);cursor:pointer;touch-action:manipulation;text-align:center;box-shadow:0 0 30px rgba(0,245,255,0.25);max-width:280px;width:90%;line-height:1.4;}
 </style>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#00f5ff">
@@ -869,11 +872,13 @@ function showDashboard(a) {
     + '<div class="dash-body">'
     + '<div class="dash-sec"><div class="dash-sec-lbl">' + dhyp + '</div><div style="font-size:13px;color:var(--muted2);font-style:italic;line-height:1.6">"' + state.outcome + '"</div></div>'
     + (an.marketInsight?'<div class="dash-sec"><div class="dash-sec-lbl">' + dmarket + '</div><div class="market-box">&#128269; ' + an.marketInsight + '</div></div>':'')
+    + (window._paid ? '' : '<div class="dash-blur-wrap">')
     + (window._paid ? '' : '<div class="dash-blur">')
     + '<div class="dash-sec"><div class="dash-sec-lbl">' + dstr + '</div><div class="dash-tags">' + strs + '</div></div>'
     + '<div class="dash-sec"><div class="dash-sec-lbl">' + drisk + '</div>' + risks + '</div>'
     + '<div class="dash-sec"><div class="dash-sec-lbl">' + dpaths + '</div>' + sols + '</div>'
     + (window._paid ? '' : '</div>')
+    + (window._paid ? '' : '<div class="dash-unlock-btn-wrap"><button class="dash-unlock-btn" onclick="openPaywall()">🔒 ' + (lang==='pt' ? 'DESBLOQUEAR AN\u00c1LISE COMPLETA<br>pontos fortes · riscos · caminhos · PDF<br><span style="font-size:16px;color:var(--text)">R$9,90</span>' : 'UNLOCK FULL ANALYSIS<br>strengths · risks · paths · PDF<br><span style="font-size:16px;color:var(--text)">R$9.90</span>') + '</button></div></div>')
     + '</div>'
     + '<div class="disclaimer"><p>' + tx.disclaimer + '</p></div>'
     + (window._paid
@@ -882,7 +887,7 @@ function showDashboard(a) {
         + '<button class="btn-copy" onclick="exportPDF()"><span style="font-size:16px">&#128196;</span>' + tx.pdfBtn + '</button>'
         + '<button class="btn-copy" onclick="copyLink()"><span style="font-size:16px">&#128279;</span>' + tx.copyBtn + '</button>'
         + '</div><div id="copied"></div></div>'
-      : '<div class="share-area"><button class="pw-btn" style="margin:0" onclick="openPaywall()">🔒 ' + (lang==='pt' ? 'DESBLOQUEAR AN\u00c1LISE — R$9,90' : 'UNLOCK FULL ANALYSIS — R$9.90') + '</button></div>'
+      : ''
     )
     + '<div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px">'
     + '<button class="btn btn-ghost" onclick="replayRPG()">&#8635; ' + tx.replay + '</button>'
@@ -1030,6 +1035,15 @@ try {
   if (_params.get('paid') === '1') {
     window._paid = true;
     sessionStorage.setItem('simly_paid', '1');
+    // Restore saved state from before payment
+    var _saved = sessionStorage.getItem('simly_state');
+    if (_saved) {
+      var _s = JSON.parse(_saved);
+      if (_s && _s.outcome) {
+        state = _s;
+        phase = 'dashboard';
+      }
+    }
   }
   if (_params.get('dev') === '1') window._paid = true;
   if (sessionStorage.getItem('simly_paid') === '1') window._paid = true;
@@ -1043,6 +1057,7 @@ function closePaywall() {
   document.getElementById('paywallOverlay').classList.remove('show');
 }
 function goToPayment() {
+  try { sessionStorage.setItem('simly_state', JSON.stringify(state)); } catch(e) {}
   window.location.href = STRIPE_LINK;
 }
 
