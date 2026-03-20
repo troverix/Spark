@@ -15,8 +15,8 @@ exports.handler = async function (event) {
     return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON' }) };
   }
 
-  // Enforce web_search tool — client doesn't need to pass it, we inject here
-  body.tools = [{ type: 'web_search_20250305', name: 'web_search' }];
+  // Remove any tools passed by client to keep it simple
+  delete body.tools;
 
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
