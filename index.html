@@ -185,8 +185,19 @@ textarea::placeholder{color:var(--muted);font-style:italic;}
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Simly">
 <link rel="apple-touch-icon" href="/icon-192.png">
+<style>
+#installBanner{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);z-index:999;display:none;align-items:center;gap:10px;background:#0d0d2b;border:1px solid #00f5ff;padding:12px 16px;box-shadow:0 0 20px rgba(0,245,255,0.15);max-width:340px;width:calc(100% - 40px);}
+#installBanner.show{display:flex;}
+#installBtn{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:700;letter-spacing:0.12em;text-transform:uppercase;padding:10px 16px;background:rgba(0,245,255,0.08);border:1px solid #00f5ff;color:#00f5ff;cursor:pointer;flex:1;touch-action:manipulation;}
+#installClose{font-family:'Share Tech Mono',monospace;font-size:14px;color:#4a4a8a;background:transparent;border:none;cursor:pointer;padding:4px 8px;touch-action:manipulation;flex-shrink:0;}
+#installClose:hover{color:#e8e8ff;}
+</style>
 </head>
 <body>
+<div id="installBanner">
+  <button id="installBtn">📲 INSTALAR APP</button>
+  <button id="installClose">✕</button>
+</div>
 <div class="container">
   <div class="app-header" id="appHeader">
     <div class="logo">SIMLY</div>
@@ -970,6 +981,44 @@ pdfDiv.style.display = 'none';
 document.body.appendChild(pdfDiv);
 
 render();
+
+// ── PWA INSTALL BANNER ──
+var _deferredPrompt = null;
+var _bannerDismissed = false;
+try { _bannerDismissed = !!localStorage.getItem('simly_installed'); } catch(e) {}
+
+window.addEventListener('beforeinstallprompt', function(e) {
+  e.preventDefault();
+  _deferredPrompt = e;
+  if (!_bannerDismissed) {
+    var banner = document.getElementById('installBanner');
+    if (banner) banner.classList.add('show');
+  }
+});
+
+window.addEventListener('appinstalled', function() {
+  var banner = document.getElementById('installBanner');
+  if (banner) banner.classList.remove('show');
+  try { localStorage.setItem('simly_installed', '1'); } catch(e) {}
+  _deferredPrompt = null;
+});
+
+document.getElementById('installBtn').addEventListener('click', function() {
+  if (_deferredPrompt) {
+    _deferredPrompt.prompt();
+    _deferredPrompt.userChoice.then(function() {
+      _deferredPrompt = null;
+      var banner = document.getElementById('installBanner');
+      if (banner) banner.classList.remove('show');
+    });
+  }
+});
+
+document.getElementById('installClose').addEventListener('click', function() {
+  var banner = document.getElementById('installBanner');
+  if (banner) banner.classList.remove('show');
+  try { localStorage.setItem('simly_installed', '1'); } catch(e) {}
+});
 </script>
 </body>
 </html>
