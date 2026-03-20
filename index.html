@@ -178,6 +178,21 @@ textarea::placeholder{color:var(--muted);font-style:italic;}
 @media(hover:hover){.btn-start:hover{background:rgba(0,245,255,0.15);animation:none;}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:380px){.btn-row.two{grid-template-columns:1fr;}.share-btns{flex-wrap:wrap;}.mode-selector{flex-direction:column;}}
+/* Paywall */
+#paywallOverlay{position:fixed;inset:0;z-index:998;display:none;align-items:flex-end;justify-content:center;background:rgba(7,7,20,0.85);backdrop-filter:blur(6px);}
+#paywallOverlay.show{display:flex;}
+#paywallModal{background:var(--surface);border:1px solid var(--border);border-top:2px solid var(--cyan);width:100%;max-width:480px;padding:24px 20px 32px;position:relative;}
+#paywallModal::before{content:"";position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),var(--purple),transparent);}
+.pw-title{font-family:"Orbitron",monospace;font-weight:900;font-size:clamp(18px,5vw,24px);color:var(--cyan);margin-bottom:4px;letter-spacing:0.06em;}
+.pw-sub{font-family:"Share Tech Mono",monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted2);margin-bottom:20px;}
+.pw-items{display:flex;flex-direction:column;gap:8px;margin-bottom:20px;}
+.pw-item{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--text);}
+.pw-item::before{content:"✓";font-family:"Share Tech Mono",monospace;font-size:11px;color:var(--cyan);flex-shrink:0;}
+.pw-price{font-family:"Orbitron",monospace;font-weight:900;font-size:28px;color:var(--text);margin-bottom:16px;}
+.pw-price span{font-size:14px;color:var(--muted2);font-weight:400;}
+.pw-btn{width:100%;font-family:"Orbitron",monospace;font-weight:900;font-size:14px;letter-spacing:0.1em;text-transform:uppercase;padding:18px;background:rgba(0,245,255,0.1);border:2px solid var(--cyan);color:var(--cyan);cursor:pointer;touch-action:manipulation;}
+.pw-close{position:absolute;top:14px;right:16px;font-family:"Share Tech Mono",monospace;font-size:18px;color:var(--muted);background:transparent;border:none;cursor:pointer;padding:4px 8px;}
+.dash-blur{filter:blur(5px);pointer-events:none;user-select:none;}
 </style>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#00f5ff">
@@ -197,6 +212,23 @@ textarea::placeholder{color:var(--muted);font-style:italic;}
 <div id="installBanner">
   <button id="installBtn">📲 INSTALAR APP</button>
   <button id="installClose">✕</button>
+</div>
+<div id="paywallOverlay">
+  <div id="paywallModal">
+    <button class="pw-close" onclick="closePaywall()">✕</button>
+    <div class="pw-title">ANÁLISE COMPLETA</div>
+    <div class="pw-sub">DESBLOQUEIE O RELATÓRIO COMPLETO</div>
+    <div class="pw-items">
+      <div class="pw-item">Pontos fortes da sua ideia</div>
+      <div class="pw-item">Riscos e como mitigá-los</div>
+      <div class="pw-item">Caminhos de execução</div>
+      <div class="pw-item">Análise de mercado</div>
+      <div class="pw-item">Ideias similares no mercado</div>
+      <div class="pw-item">Relatório PDF para download</div>
+    </div>
+    <div class="pw-price">R$9,90 <span>pagamento único</span></div>
+    <button class="pw-btn" onclick="goToPayment()">🔓 DESBLOQUEAR AGORA</button>
+  </div>
 </div>
 <div class="container">
   <div class="app-header" id="appHeader">
@@ -837,17 +869,21 @@ function showDashboard(a) {
     + '<div class="dash-body">'
     + '<div class="dash-sec"><div class="dash-sec-lbl">' + dhyp + '</div><div style="font-size:13px;color:var(--muted2);font-style:italic;line-height:1.6">"' + state.outcome + '"</div></div>'
     + (an.marketInsight?'<div class="dash-sec"><div class="dash-sec-lbl">' + dmarket + '</div><div class="market-box">&#128269; ' + an.marketInsight + '</div></div>':'')
+    + (window._paid ? '' : '<div class="dash-blur">')
     + '<div class="dash-sec"><div class="dash-sec-lbl">' + dstr + '</div><div class="dash-tags">' + strs + '</div></div>'
     + '<div class="dash-sec"><div class="dash-sec-lbl">' + drisk + '</div>' + risks + '</div>'
     + '<div class="dash-sec"><div class="dash-sec-lbl">' + dpaths + '</div>' + sols + '</div>'
+    + (window._paid ? '' : '</div>')
     + '</div>'
     + '<div class="disclaimer"><p>' + tx.disclaimer + '</p></div>'
-    + '<div class="share-area"><div class="share-lbl">' + tx.shareLabel + '</div>'
-    + '<div class="share-btns">'
-    + '<button class="btn-wa" onclick="shareWA()"><span style="font-size:20px">&#128172;</span> ' + tx.waBtn + '</button>'
-    + '<button class="btn-copy" onclick="exportPDF()"><span style="font-size:16px">&#128196;</span>' + tx.pdfBtn + '</button>'
-    + '<button class="btn-copy" onclick="copyLink()"><span style="font-size:16px">&#128279;</span>' + tx.copyBtn + '</button>'
-    + '</div><div id="copied"></div></div>'
+    + (window._paid
+      ? '<div class="share-area"><div class="share-lbl">' + tx.shareLabel + '</div><div class="share-btns">'
+        + '<button class="btn-wa" onclick="shareWA()"><span style="font-size:20px">&#128172;</span> ' + tx.waBtn + '</button>'
+        + '<button class="btn-copy" onclick="exportPDF()"><span style="font-size:16px">&#128196;</span>' + tx.pdfBtn + '</button>'
+        + '<button class="btn-copy" onclick="copyLink()"><span style="font-size:16px">&#128279;</span>' + tx.copyBtn + '</button>'
+        + '</div><div id="copied"></div></div>'
+      : '<div class="share-area"><button class="pw-btn" style="margin:0" onclick="openPaywall()">🔒 ' + (lang==='pt' ? 'DESBLOQUEAR AN\u00c1LISE — R$9,90' : 'UNLOCK FULL ANALYSIS — R$9.90') + '</button></div>'
+    )
     + '<div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px">'
     + '<button class="btn btn-ghost" onclick="replayRPG()">&#8635; ' + tx.replay + '</button>'
     + '<button class="btn btn-ghost" onclick="resetAll()">&#8635; ' + tx.newSim + '</button>'
@@ -985,6 +1021,30 @@ var pdfDiv = document.createElement('div');
 pdfDiv.id = 'pdfDiv';
 pdfDiv.style.display = 'none';
 document.body.appendChild(pdfDiv);
+
+// ── PAYWALL ──
+var STRIPE_LINK = 'https://buy.stripe.com/dRm00c3Sw2HUc2u9CKabK00';
+window._paid = false;
+try {
+  var _params = new URLSearchParams(window.location.search);
+  if (_params.get('paid') === '1') {
+    window._paid = true;
+    sessionStorage.setItem('simly_paid', '1');
+  }
+  if (_params.get('dev') === '1') window._paid = true;
+  if (sessionStorage.getItem('simly_paid') === '1') window._paid = true;
+} catch(e) {}
+
+function openPaywall() {
+  try { sessionStorage.setItem('simly_state', JSON.stringify(state)); } catch(e) {}
+  document.getElementById('paywallOverlay').classList.add('show');
+}
+function closePaywall() {
+  document.getElementById('paywallOverlay').classList.remove('show');
+}
+function goToPayment() {
+  window.location.href = STRIPE_LINK;
+}
 
 render();
 
