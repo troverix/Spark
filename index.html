@@ -889,12 +889,12 @@ async function showVerdict(a) {
     var p;
     if (isSolve()) {
       p = lang === 'pt'
-        ? 'Avalie a viabilidade desta solucao. JSON sem backticks. No campo similarProjects, inclua apenas se houver produtos ou servicos diretamente comparaveis — caso contrario retorne array vazio.\n\nProblema: ' + state.spark + '\nNecessidade: ' + state.objective + '\nSolucao: ' + state.outcome + '\nContexto: ' + marketData + '\n\nCriterios (evite 60-75):\n- 85-100: solucao clara, aplicavel, resolve o problema\n- 65-84: boa solucao com obstaculos gerenciaveis\n- 45-64: solucao parcial ou com limitacoes\n- 0-44: solucao nao resolve ou impraticavel\n\n{"score":0-100,"scoreLabel":"3-5 palavras","marketInsight":"1-2 frases sobre contexto","similarProjects":[{"name":"nome do produto","description":"o que faz e como se relaciona"}],"strengths":["s1","s2"],"risks":[{"risk":"limitacao","mitigation":"como superar"}],"solutions":["variacao 1","variacao 2","variacao 3"]}'
-        : 'Evaluate the viability of this solution. JSON no backticks. In the similarProjects field, only include entries if there are directly comparable products or services — otherwise return empty array.\n\nProblem: ' + state.spark + '\nNeed: ' + state.objective + '\nSolution: ' + state.outcome + '\nContext: ' + marketData + '\n\nCriteria (avoid 60-75):\n- 85-100: clear solution, applicable, resolves the problem\n- 65-84: good solution with manageable obstacles\n- 45-64: partial solution or with limitations\n- 0-44: does not resolve or impractical\n\n{"score":0-100,"scoreLabel":"3-5 words","marketInsight":"1-2 sentences about context","similarProjects":[{"name":"product name","description":"what it does and how it relates"}],"strengths":["s1","s2"],"risks":[{"risk":"limitation","mitigation":"how to overcome"}],"solutions":["variation 1","variation 2","variation 3"]}';
+        ? 'Avalie a viabilidade desta solucao. JSON sem backticks. No campo similarProjects, inclua apenas se houver produtos ou servicos diretamente comparaveis — caso contrario retorne array vazio.\n\nProblema: ' + state.spark + '\nNecessidade: ' + state.objective + '\nSolucao: ' + state.outcome + '\nContexto: ' + marketData + '\n\nCriterios (evite 60-75):\n- 85-100: solucao clara, aplicavel, resolve o problema\n- 65-84: boa solucao com obstaculos gerenciaveis\n- 45-64: solucao parcial ou com limitacoes\n- 0-44: solucao nao resolve ou impraticavel\n\n{"score":0-100,"scoreLabel":"3-5 palavras","marketInsight":"1-2 frases sobre contexto","similarProjects":[{"name":"nome do produto","description":"o que faz e como se relaciona"}],"strengths":["s1","s2"],"risks":[{"risk":"limitacao","mitigation":"como superar"}],"solutions":["variacao 1","variacao 2","variacao 3"],"teamNeeded":true/false,"teamRoles":["papel 1","papel 2"]}'
+        : 'Evaluate the viability of this solution. JSON no backticks. In the similarProjects field, only include entries if there are directly comparable products or services — otherwise return empty array.\n\nProblem: ' + state.spark + '\nNeed: ' + state.objective + '\nSolution: ' + state.outcome + '\nContext: ' + marketData + '\n\nCriteria (avoid 60-75):\n- 85-100: clear solution, applicable, resolves the problem\n- 65-84: good solution with manageable obstacles\n- 45-64: partial solution or with limitations\n- 0-44: does not resolve or impractical\n\n{"score":0-100,"scoreLabel":"3-5 words","marketInsight":"1-2 sentences about context","similarProjects":[{"name":"product name","description":"what it does and how it relates"}],"strengths":["s1","s2"],"risks":[{"risk":"limitation","mitigation":"how to overcome"}],"solutions":["variation 1","variation 2","variation 3"],"teamNeeded":true/false,"teamRoles":["role 1","role 2"]}';
     } else {
       p = lang === 'pt'
-        ? 'Analise o potencial desta ideia. JSON sem backticks. No campo similarProjects, inclua apenas se houver produtos ou servicos diretamente comparaveis — caso contrario retorne array vazio.\n\nSpark: ' + state.spark + '\nObjective: ' + state.objective + '\nHipotese: ' + state.outcome + '\nMercado: ' + marketData + '\n\nCriterios (evite 60-75):\n- 85-100: mercado grande e crescente, demanda comprovada\n- 65-84: mercado existe, demanda emergente\n- 45-64: mercado pequeno ou incerto\n- 0-44: mercado inexistente ou timing ruim\n\n{"score":0-100,"scoreLabel":"3-5 palavras","marketInsight":"1-2 frases com dados de mercado","similarProjects":[{"name":"nome do produto","description":"o que faz e como se relaciona"}],"strengths":["s1","s2"],"risks":[{"risk":"risco","mitigation":"mitigacao"}],"solutions":["caminho 1","caminho 2","caminho 3"]}'
-        : 'Analyze the potential of this idea. JSON no backticks. In the similarProjects field, only include entries if there are directly comparable products or services — otherwise return empty array.\n\nSpark: ' + state.spark + '\nObjective: ' + state.objective + '\nHypothesis: ' + state.outcome + '\nMarket: ' + marketData + '\n\nCriteria (avoid 60-75):\n- 85-100: large growing market, proven demand\n- 65-84: market exists, emerging demand\n- 45-64: small or uncertain market\n- 0-44: non-existent market or bad timing\n\n{"score":0-100,"scoreLabel":"3-5 words","marketInsight":"1-2 sentences with market data","similarProjects":[{"name":"product name","description":"what it does and how it relates"}],"strengths":["s1","s2"],"risks":[{"risk":"risk","mitigation":"mitigation"}],"solutions":["path 1","path 2","path 3"]}';
+        ? 'Analise o potencial desta ideia. JSON sem backticks. No campo similarProjects, inclua apenas se houver produtos ou servicos diretamente comparaveis — caso contrario retorne array vazio.\n\nSpark: ' + state.spark + '\nObjective: ' + state.objective + '\nHipotese: ' + state.outcome + '\nMercado: ' + marketData + '\n\nCriterios (evite 60-75):\n- 85-100: mercado grande e crescente, demanda comprovada\n- 65-84: mercado existe, demanda emergente\n- 45-64: mercado pequeno ou incerto\n- 0-44: mercado inexistente ou timing ruim\n\n{"score":0-100,"scoreLabel":"3-5 palavras","marketInsight":"1-2 frases com dados de mercado","similarProjects":[{"name":"nome do produto","description":"o que faz e como se relaciona"}],"strengths":["s1","s2"],"risks":[{"risk":"risco","mitigation":"mitigacao"}],"solutions":["caminho 1","caminho 2","caminho 3"],"teamNeeded":true/false,"teamRoles":["papel 1","papel 2"]}'
+        : 'Analyze the potential of this idea. JSON no backticks. In the similarProjects field, only include entries if there are directly comparable products or services — otherwise return empty array.\n\nSpark: ' + state.spark + '\nObjective: ' + state.objective + '\nHypothesis: ' + state.outcome + '\nMarket: ' + marketData + '\n\nCriteria (avoid 60-75):\n- 85-100: large growing market, proven demand\n- 65-84: market exists, emerging demand\n- 45-64: small or uncertain market\n- 0-44: non-existent market or bad timing\n\n{"score":0-100,"scoreLabel":"3-5 words","marketInsight":"1-2 sentences with market data","similarProjects":[{"name":"product name","description":"what it does and how it relates"}],"strengths":["s1","s2"],"risks":[{"risk":"risk","mitigation":"mitigation"}],"solutions":["path 1","path 2","path 3"],"teamNeeded":true/false,"teamRoles":["role 1","role 2"]}';
     }
     var an = await api(p, 600);
     // Convert categoria to score to avoid model anchoring on 72
@@ -913,6 +913,15 @@ async function showVerdict(a) {
       an.score = catMap[cat]();
     } else if (!an.score || an.score === 72) {
       an.score = 55 + Math.floor(Math.random()*30);
+    }
+    // Fetch team cost data if team is needed
+    if (an.teamNeeded && an.teamRoles && an.teamRoles.length) {
+      try {
+        var teamQuery = lang === 'pt'
+          ? 'Pesquise valores de mercado no Brasil em 2024-2025 para contratar os seguintes perfis profissionais como freelancer/PJ e CLT. Retorne apenas texto curto com faixas de salario em reais por mes. Perfis: ' + an.teamRoles.join(', ')
+          : 'Research 2024-2025 market rates in Brazil for hiring these profiles as freelancer and CLT. Return short text with monthly salary ranges in BRL. Profiles: ' + an.teamRoles.join(', ');
+        an.teamCostData = await apiSearch(teamQuery, 300);
+      } catch(e) { an.teamCostData = null; }
     }
     state.analysis = an;
     var funded = an.score >= 65;
@@ -983,6 +992,22 @@ function showDashboard(a) {
     + '<div class="dash-sec"><div class="dash-sec-lbl">' + drisk + '</div>' + risks + '</div>'
     + '<div class="dash-sec"><div class="dash-sec-lbl">' + dpaths + '</div>' + solsHtml + '</div>'
     + similarsHtml
+    + (an.teamNeeded && an.teamRoles && an.teamRoles.length
+      ? '<div class="dash-sec" style="background:rgba(180,79,255,0.06);border-top:1px solid rgba(180,79,255,0.2);">'
+        + '<div class="dash-sec-lbl" style="background:rgba(180,79,255,0.2);border-color:rgba(180,79,255,0.4);">' + (lang==='pt'?'TIME M\u00cdNIMO SUGERIDO':'MINIMUM TEAM SUGGESTED') + '</div>'
+        + '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">'
+        + an.teamRoles.map(function(r){ return '<div style="background:rgba(180,79,255,0.1);border:1px solid rgba(180,79,255,0.3);padding:7px 14px;font-family:Share Tech Mono,monospace;font-size:10px;letter-spacing:0.1em;color:#d8a0ff">' + r + '</div>'; }).join('')
+        + '</div>'
+        + (an.teamCostData ? '<div style="background:rgba(255,255,255,0.04);border:1px solid #3a3a7e;padding:14px;font-size:14px;color:#d0d0f0;line-height:1.7;margin-bottom:10px">' + an.teamCostData + '</div>' : '')
+        + '<div style="background:rgba(0,245,255,0.05);border:1px solid rgba(0,245,255,0.15);padding:12px 14px;font-size:13px;color:#c0c0e0;line-height:1.6;margin-bottom:10px">'
+        + (lang==='pt'?'<strong style="color:#00f5ff">Alternativa solo:</strong> ferramentas no-code + IA podem reduzir significativamente o custo inicial.'
+                      :'<strong style="color:#00f5ff">Solo alternative:</strong> no-code tools + AI can significantly reduce initial costs.')
+        + '</div>'
+        + '<div style="font-family:Share Tech Mono,monospace;font-size:9px;color:#5a5a8a;line-height:1.7;border-top:1px solid #2a2a5e;padding-top:10px">'
+        + (lang==='pt'?'⚠ Estimativas baseadas em dados de mercado brasileiro. Valores variam conforme experiência, região e modelo de contratação.':'⚠ Estimates based on Brazilian market data. Values vary by experience, region and contract model.')
+        + '</div>'
+        + '</div>'
+      : '')
     + '</div>'
     + '<div class="disclaimer"><p>' + tx.disclaimer + '</p></div>'
     + (window._paid
