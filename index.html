@@ -879,6 +879,14 @@ function showDashboard(a) {
         + '</div><div id="copied"></div></div>'
       : ''
     )
+    + '<div style="padding:16px 20px;border-top:1px solid var(--border);background:rgba(180,79,255,0.04)">'
+    + '<div style="font-family:Share Tech Mono,monospace;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--purple);margin-bottom:10px;text-align:center">'
+    + (lang==='pt' ? '💜 GOSTOU DO SIMLY?' : '💜 ENJOYING SIMLY?') + '</div>'
+    + '<p style="font-size:12px;color:var(--muted2);text-align:center;line-height:1.6;margin-bottom:12px">'
+    + (lang==='pt' ? 'Conta para alguém que tem uma ideia engavetada.' : 'Tell someone with an idea waiting to be tested.') + '</p>'
+    + '<button class="btn-wa" style="width:100%" onclick="shareSimly()"><span style="font-size:18px">&#128172;</span> '
+    + (lang==='pt' ? 'COMPARTILHAR O SIMLY' : 'SHARE SIMLY') + '</button>'
+    + '</div>'
     + '<div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px">'
     + '<button class="btn btn-ghost" onclick="replayRPG()">&#8635; ' + tx.replay + '</button>'
     + '<button class="btn btn-ghost" onclick="resetAll()">&#8635; ' + tx.newSim + '</button>'
@@ -908,6 +916,12 @@ function buildTxt() {
     + '\n\n- simulate before you build';
 }
 function shareWA() { window.open('https://wa.me/?text=' + encodeURIComponent(buildTxt()), '_blank'); }
+function shareSimly() {
+  var msg = lang==='pt'
+    ? 'Encontrei uma ferramenta que simula sua ideia antes de voc\u00ea construir. Vale muito testar: simlyapp.netlify.app'
+    : 'Found a tool that simulates your idea before you build it. Worth trying: simlyapp.netlify.app';
+  window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+}
 function copyLink() {
   navigator.clipboard.writeText(buildTxt()).then(function(){
     var el = document.getElementById('copied');
@@ -1021,7 +1035,7 @@ document.body.appendChild(pdfDiv);
 // ── PAYWALL ──
 var STRIPE_LINK = 'https://buy.stripe.com/dRm00c3Sw2HUc2u9CKabK00';
 var SIMS_PER_PURCHASE = 3;
-window._paid = false;
+window._paid = true; // Paywall temporarily disabled
 
 function _getCredits() {
   try { return parseInt(localStorage.getItem('simly_credits') || '0'); } catch(e) { return 0; }
