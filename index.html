@@ -195,6 +195,30 @@ textarea::placeholder{color:var(--muted);font-style:italic;}
 @keyframes pulse{0%,100%{box-shadow:0 0 20px rgba(0,245,255,0.1);}50%{box-shadow:0 0 40px rgba(0,245,255,0.25);}}
 @media(hover:hover){.btn-start:hover{background:rgba(0,245,255,0.15);animation:none;}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+/* ── HUD ── */
+#simHud{
+  position:fixed;top:0;left:0;right:0;z-index:990;
+  background:rgba(7,7,20,0.95);
+  border-bottom:1px solid var(--border);
+  padding:8px 16px;
+  display:none;
+  align-items:center;
+  gap:10px;
+  backdrop-filter:blur(8px);
+}
+#simHud.visible{display:flex;}
+.hud-hearts{display:flex;align-items:center;gap:3px;flex-shrink:0;}
+.hud-counter{display:flex;align-items:baseline;gap:5px;flex:1;}
+.hud-num{font-family:'Orbitron',monospace;font-weight:900;font-size:18px;line-height:1;}
+.hud-of{font-family:var(--px);font-size:6px;color:var(--muted2);letter-spacing:0.05em;}
+.hud-plan-badge{font-family:var(--px);font-size:6px;letter-spacing:0.06em;padding:3px 8px;border:1px solid;flex-shrink:0;}
+.hud-renew{font-family:var(--px);font-size:6px;letter-spacing:0.06em;padding:5px 8px;border:1px solid var(--purple);color:var(--purple);background:rgba(180,79,255,0.1);cursor:pointer;flex-shrink:0;animation:hudpulse 2s infinite;}
+@keyframes hudpulse{0%,100%{box-shadow:0 0 0 rgba(180,79,255,0)}50%{box-shadow:0 0 8px rgba(180,79,255,0.4)}}
+@keyframes hudblink{0%,49%{opacity:1}50%,100%{opacity:0.2}}
+
+/* Push content down when HUD visible */
+body.hud-visible .container{padding-top:52px;}
+
 /* ── 16BIT HYBRID STYLES ── */
 /* Scanlines */
 body::before{background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px),repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.04) 3px,rgba(0,0,0,0.04) 4px);}
@@ -381,9 +405,9 @@ body::before{background-image:linear-gradient(var(--grid) 1px,transparent 1px),l
 .sim-card-verdict{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;padding:4px 10px;border:1px solid;}
 .sim-card-verdict.funded{color:var(--cyan);border-color:var(--cyan);}
 .sim-card-verdict.drawing{color:var(--pink);border-color:var(--pink);}
-.sim-card-date{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--muted2);letter-spacing:0;}
+.sim-card-date{font-family:'Share Tech Mono',monospace;font-size:12px;color:var(--muted2);letter-spacing:0.05em;}
 .sim-card-hypothesis{font-size:13px;color:#b0b0cc;font-style:italic;line-height:1.6;margin-top:10px;border-left:2px solid var(--border);padding-left:12px;}
-.sim-card-arrow{position:absolute;right:16px;bottom:14px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted2);}
+.sim-card-arrow{font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted2);}
 /* Hamburger Menu */
 #hamburger{position:fixed;top:16px;right:16px;z-index:997;background:var(--surface);border:1px solid var(--border);width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;}
 #hamburger:hover{border-color:var(--cyan);}
@@ -421,6 +445,15 @@ body::before{background-image:linear-gradient(var(--grid) 1px,transparent 1px),l
   <button class="hmenu-item highlight" id="hmenu-cadastrar" onclick="openLogin(&apos;up&apos;);toggleMenu()">CADASTRAR</button>
   <button class="hmenu-item" id="hmenu-perfil" style="display:none;color:var(--muted2)" onclick="openMySims();toggleMenu()">MINHAS SIMULAÇÕES</button>
   <button class="hmenu-item" id="hmenu-sair" style="display:none;color:var(--pink)" onclick="_logout();toggleMenu()">SAIR</button>
+</div>
+<div id="simHud">
+  <div class="hud-hearts" id="hudHearts"></div>
+  <div class="hud-counter">
+    <span class="hud-num" id="hudNum">-</span>
+    <span class="hud-of" id="hudOf">SIMS</span>
+  </div>
+  <div class="hud-plan-badge" id="hudPlan" style="display:none"></div>
+  <button class="hud-renew" id="hudRenew" style="display:none" onclick="openPricing()">+ RENOVAR</button>
 </div>
 <div id="mockBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:1000;background:rgba(255,45,120,0.15);border-top:1px solid var(--pink);padding:6px;text-align:center;font-family:Share Tech Mono,monospace;font-size:8px;letter-spacing:0.2em;color:var(--pink);text-transform:uppercase">
   ⚡ MODO TESTE — API não está sendo chamada
@@ -479,6 +512,8 @@ _sb.auth.getSession().then(function(d) {
   if (d.data && d.data.session) {
     _user = d.data.session.user;
     _updateMenuForUser();
+    _loadUserSimCount();
+    _renderHud();
   }
 });
 
@@ -486,6 +521,107 @@ _sb.auth.onAuthStateChange(function(event, session) {
   _user = session ? session.user : null;
   _updateMenuForUser();
 });
+
+async function _loadUserSimCount() {
+  if (!_user) return;
+  try {
+    var startOfMonth = new Date();
+    startOfMonth.setDate(1);
+    startOfMonth.setHours(0,0,0,0);
+    var r = await _sb.from('simulations')
+      .select('id', {count:'exact', head:true})
+      .eq('user_id', _user.id)
+      .gte('created_at', startOfMonth.toISOString());
+    window._userSimCount = r.count || 0;
+    window._userSimLimit = 2; // FREE plan
+    _updateStreakDisplay();
+  } catch(e) { window._userSimCount = 0; }
+}
+
+function _pixelHeart(color, full) {
+  var opacity = full ? '1' : '0.15';
+  var glow = full ? 'filter:drop-shadow(0 0 3px ' + color + '88);' : '';
+  return '<svg width="14" height="14" viewBox="0 0 8 8" style="image-rendering:pixelated;opacity:' + opacity + ';' + glow + '">'
+    + '<rect x="1" y="0" width="2" height="1" fill="' + color + '"/>'
+    + '<rect x="5" y="0" width="2" height="1" fill="' + color + '"/>'
+    + '<rect x="0" y="1" width="3" height="1" fill="' + color + '"/>'
+    + '<rect x="4" y="1" width="3" height="1" fill="' + color + '"/>'
+    + '<rect x="0" y="2" width="8" height="2" fill="' + color + '"/>'
+    + '<rect x="1" y="4" width="6" height="1" fill="' + color + '"/>'
+    + '<rect x="2" y="5" width="4" height="1" fill="' + color + '"/>'
+    + '<rect x="3" y="6" width="2" height="1" fill="' + color + '"/>'
+    + '</svg>';
+}
+
+function _renderHud() {
+  if (!_user) {
+    var hud = document.getElementById('simHud');
+    if (hud) { hud.classList.remove('visible'); document.body.classList.remove('hud-visible'); }
+    return;
+  }
+  var used = window._userSimCount || 0;
+  var limit = window._userSimLimit || 2;
+  var remaining = Math.max(0, limit - used);
+  var planName = limit <= 2 ? 'FREE' : limit <= 5 ? 'STARTER' : 'PRO';
+  var color = limit <= 2 ? '#ff2d78' : limit <= 5 ? '#b44fff' : '#00f5ff';
+  var zeroed = remaining === 0;
+
+  var heartsEl = document.getElementById('hudHearts');
+  var numEl = document.getElementById('hudNum');
+  var ofEl = document.getElementById('hudOf');
+  var planEl = document.getElementById('hudPlan');
+  var renewEl = document.getElementById('hudRenew');
+  var hud = document.getElementById('simHud');
+
+  if (!hud) return;
+
+  // 3 hearts — filled based on remaining proportion
+  var filled = Math.ceil((remaining / limit) * 3);
+  if (heartsEl) {
+    heartsEl.innerHTML =
+      _pixelHeart(color, filled >= 1) +
+      _pixelHeart(color, filled >= 2) +
+      _pixelHeart(color, filled >= 3);
+  }
+
+  if (numEl) {
+    numEl.textContent = remaining;
+    numEl.style.color = zeroed ? '#ff2d78' : color;
+    numEl.style.animation = zeroed ? 'hudblink 0.8s steps(1) infinite' : 'none';
+  }
+  if (ofEl) {
+    ofEl.textContent = 'DE ' + limit + ' SIMS';
+    ofEl.style.color = zeroed ? '#ff2d78' : '';
+  }
+  if (planEl) {
+    planEl.style.display = 'block';
+    planEl.textContent = planName;
+    planEl.style.color = color;
+    planEl.style.borderColor = color;
+  }
+  if (renewEl) renewEl.style.display = zeroed ? 'block' : 'none';
+
+  hud.style.borderBottomColor = color;
+  hud.classList.add('visible');
+  document.body.classList.add('hud-visible');
+}
+
+function _updateStreakDisplay() {
+  // Will be called after render to update streak
+  var el = document.getElementById('user-sim-streak');
+  if (el) {
+    var used = window._userSimCount || 0;
+    var limit = window._userSimLimit || 2;
+    var remaining = Math.max(0, limit - used);
+    var planName = limit <= 2 ? 'FREE' : limit <= 5 ? 'STARTER' : 'PRO';
+    el.innerHTML = _pixelBulb() + ' ' + remaining + ' DE ' + limit + ' SIMS · ' + planName;
+  }
+  _renderHud();
+}
+
+function _pixelBulb() {
+  return '<svg width="12" height="12" viewBox="0 0 8 8" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated;vertical-align:middle;margin-right:4px"><rect x="3" y="0" width="2" height="1" fill="#ffff00"/><rect x="2" y="1" width="4" height="1" fill="#ffff00"/><rect x="1" y="2" width="6" height="1" fill="#ffff00"/><rect x="1" y="3" width="6" height="1" fill="#ffffaa"/><rect x="2" y="4" width="4" height="1" fill="#ffff00"/><rect x="2" y="5" width="4" height="1" fill="#ffff00"/><rect x="3" y="6" width="2" height="1" fill="#aaaaaa"/><rect x="3" y="7" width="2" height="1" fill="#888888"/></svg>';
+}
 
 function _updateMenuForUser() {
   var entrar = document.getElementById('hmenu-entrar');
@@ -840,7 +976,13 @@ function setLmsg(msg) {
 // ── INTRO ──
 function showIntro(a) {
   var tx = t();
-  var streakHtml = simCount > 0 ? '<div class="streak">&#9889; ' + simCount + ' SIM</div>' : '';
+  var streakHtml;
+  if (_user) {
+    streakHtml = '<div class="streak" id="user-sim-streak">' + _pixelBulb() + ' ... CARREGANDO...</div>';
+    setTimeout(_updateStreakDisplay, 300);
+  } else {
+    streakHtml = simCount > 0 ? '<div class="streak">&#9889; ' + simCount + ' SIM</div>' : '';
+  }
   var stepList = tx.steps.map(function(s, i) {
     return '<div class="intro-step"><div class="intro-step-num">0' + (i+1) + '</div><div class="intro-step-text"><strong>' + s.t + '</strong><span>' + s.d + '</span></div></div>';
   }).join('');
@@ -867,7 +1009,61 @@ function showIntro(a) {
 }
 
 function setLang(l) { lang = l; showIntro(document.getElementById('app')); }
-function startFromIntro() { phase = 'spark'; render(); }
+function startFromIntro() {
+  if (_user) {
+    var used = window._userSimCount || 0;
+    var limit = window._userSimLimit || 2;
+    if (used >= limit) {
+      _showNoCreditsModal();
+      return;
+    }
+  }
+  phase = 'spark';
+  render();
+}
+
+function _discardSim() {
+  resetAll();
+}
+
+function _setUserPlan(limit) {
+  window._userSimLimit = limit;
+  _updateStreakDisplay();
+  var msg = limit === 5 ? 'PACK STARTER ATIVADO · 5 SIMULAÇÕES' : 'PACK PRO ATIVADO · 15 SIMULAÇÕES';
+  var toast = document.createElement('div');
+  toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:2000;background:var(--surface);border:1px solid var(--cyan);padding:10px 20px;font-family:var(--px);font-size:7px;color:var(--cyan);letter-spacing:0.1em;white-space:nowrap;';
+  toast.textContent = '✓ ' + msg;
+  document.body.appendChild(toast);
+  setTimeout(function(){ toast.remove(); }, 3000);
+}
+
+function _closeNoCredits() {
+  var m = document.getElementById('noCreditsModal');
+  if (m) m.remove();
+}
+
+function _showNoCreditsModal() {
+  var modal = document.createElement('div');
+  modal.id = 'noCreditsModal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(7,7,20,0.92);display:flex;align-items:center;justify-content:center;padding:20px;';
+  modal.innerHTML = ''
+    + '<div style="background:var(--surface);border:2px solid var(--pink);max-width:320px;width:100%;position:relative;overflow:hidden;">'
+    + '<div style="background:rgba(255,45,120,0.1);padding:20px;text-align:center;border-bottom:1px solid rgba(255,45,120,0.3);">'
+    + _pixelBulb() + _pixelBulb() + _pixelBulb()
+    + '<div style="font-family:var(--px);font-size:9px;color:var(--pink);margin-top:10px;line-height:1.9">'
+    + (lang==='pt'?'CRÉDITOS ESGOTADOS':'OUT OF CREDITS') + '</div>'
+    + '</div>'
+    + '<div style="padding:20px;text-align:center;">'
+    + '<p style="font-size:13px;color:var(--muted2);line-height:1.7;margin-bottom:16px;">'
+    + (lang==='pt'?'Você usou todas as simulações do seu plano FREE este mês.':'You have used all simulations in your FREE plan this month.')
+    + '</p>'
+    + '<button onclick="_closeNoCredits();openPricing();" style="width:100%;font-family:var(--px);font-size:9px;padding:16px;background:rgba(0,245,255,0.08);border:2px solid var(--cyan);color:var(--cyan);cursor:pointer;margin-bottom:10px;letter-spacing:0.08em;">'
+    + (lang==='pt'?'VER PLANOS':'SEE PLANS') + '</button>'
+    + '<button onclick="_closeNoCredits();" style="width:100%;font-family:var(--px);font-size:7px;padding:10px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer;letter-spacing:0.08em;">'
+    + (lang==='pt'?'FECHAR':'CLOSE') + '</button>'
+    + '</div></div>';
+  document.body.appendChild(modal);
+}
 
 // ── SPARK ──
 function showSpark(a) {
@@ -1208,13 +1404,21 @@ function showDashboard(a) {
       : '')
     + '</div>'
     + '<div class="disclaimer"><p>' + tx.disclaimer + '</p></div>'
-    + (window._paid
-      ? '<div class="share-area"><div class="share-lbl">' + tx.shareLabel + '</div><div class="share-btns">'
-        + '<button class="btn-wa" onclick="shareWA()"><span style="font-size:20px">&#128172;</span> ' + tx.waBtn + '</button>'
-        + '<button class="btn-copy" onclick="exportPDF()"><span style="font-size:16px">&#128196;</span>' + tx.pdfBtn + '</button>'
-        + '<button class="btn-copy" onclick="copyLink()"><span style="font-size:16px">&#128279;</span>' + tx.copyBtn + '</button>'
-        + '</div><div id="copied"></div></div>'
-      : ''
+    + '<div class="share-area">'
+    + '<div class="share-lbl">' + tx.shareLabel + '</div>'
+    + '<div class="share-btns">'
+    + '<button class="btn-wa" onclick="shareWA()"><span style="font-size:20px">&#128172;</span> ' + tx.waBtn + '</button>'
+    + '<button class="btn-copy" onclick="copyLink()"><span style="font-size:16px">&#128279;</span>' + tx.copyBtn + '</button>'
+    + '</div><div id="copied"></div></div>'
+    + (_user && (window._userSimLimit || 0) > 2
+      ? '<div style="padding:12px 20px;display:flex;gap:10px;border-top:1px solid var(--border)">'
+        + '<button class="btn btn-ghost" style="flex:1" onclick="_discardSim()">✕ ' + (lang==='pt'?'DESCARTAR':'DISCARD') + '</button>'
+        + '<button class="btn btn-cyan" style="flex:2" onclick="exportPDF()"><span style="font-size:14px">&#128196;</span> ' + (lang==='pt'?'SALVAR PDF':'SAVE PDF') + '</button>'
+        + '</div>'
+      : '<div style="padding:12px 20px;border-top:1px solid var(--border)">'
+        + '<button onclick="openPricing()" style="width:100%;font-family:var(--px);font-size:8px;padding:14px;background:rgba(180,79,255,0.08);border:2px solid var(--purple);color:var(--purple);cursor:pointer;letter-spacing:0.08em;line-height:1.8">'
+        + _pixelBulb() + ' ' + (lang==='pt'?'SALVAR ESTA SIMULAÇÃO\nATUALIZE SEU PLANO':'SAVE THIS SIMULATION\nUPGRADE YOUR PLAN')
+        + '</button></div>'
     )
     + '<div style="padding:16px 20px;border-top:1px solid var(--border);background:rgba(180,79,255,0.04)">'
     + '<div style="font-family:Share Tech Mono,monospace;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--purple);margin-bottom:10px;text-align:center">'
@@ -1538,8 +1742,8 @@ function openPricing() {
     + '</div>'
     + '<p style="font-size:13px;color:var(--muted2);margin-bottom:20px;line-height:1.6">Simule suas ideias antes de investir tempo ou dinheiro.</p>'
     + '<div class="plan plan-free"><div class="plan-name">FREE</div><div class="plan-price"><span class="plan-val">R$0</span><span class="plan-period">/ sempre</span></div><div class="plan-feats"><div class="plan-feat on">2 simulações para experimentar</div><div class="plan-feat on">Experiência completa</div><div class="plan-feat on">Score, análise, riscos e PDF</div></div><button class="plan-btn" onclick="closePricing()">PLANO ATUAL</button></div>'
-    + '<div class="plan plan-starter popular"><div class="plan-badge">POPULAR</div><div class="plan-name">PACK STARTER</div><div class="plan-price"><span class="plan-val">R$9,90</span><span class="plan-period">/ pack</span></div><div class="plan-feats"><div class="plan-feat on">5 simulações completas</div><div class="plan-feat on">Experiência completa</div><div class="plan-feat on">Score, análise, riscos e PDF</div><div class="plan-feat on">Créditos sem prazo de validade</div></div><button class="plan-btn" onclick="closePricing()">EM BREVE</button><div class="plan-note">~R$1,98 por simulação</div></div>'
-    + '<div class="plan plan-pro"><div class="plan-name">PACK PRO</div><div class="plan-price"><span class="plan-val">R$24,90</span><span class="plan-period">/ pack</span></div><div class="plan-feats"><div class="plan-feat on">15 simulações completas</div><div class="plan-feat on">Experiência completa</div><div class="plan-feat on">Score, análise, riscos e PDF</div><div class="plan-feat on">Créditos sem prazo de validade</div></div><button class="plan-btn" onclick="closePricing()">EM BREVE</button><div class="plan-note">~R$1,66 por simulação</div></div>';
+    + '<div class="plan plan-starter popular"><div class="plan-badge">POPULAR</div><div class="plan-name">PACK STARTER</div><div class="plan-price"><span class="plan-val">R$9,90</span><span class="plan-period">/ pack</span></div><div class="plan-feats"><div class="plan-feat on">5 simulações completas</div><div class="plan-feat on">Experiência completa</div><div class="plan-feat on">Score, análise, riscos e PDF</div><div class="plan-feat on">Créditos sem prazo de validade</div></div><button class="plan-btn" onclick="_setUserPlan(5);closePricing();">TESTAR PACK STARTER</button><div class="plan-note">~R$1,98 por simulação</div></div>'
+    + '<div class="plan plan-pro"><div class="plan-name">PACK PRO</div><div class="plan-price"><span class="plan-val">R$24,90</span><span class="plan-period">/ pack</span></div><div class="plan-feats"><div class="plan-feat on">15 simulações completas</div><div class="plan-feat on">Experiência completa</div><div class="plan-feat on">Score, análise, riscos e PDF</div><div class="plan-feat on">Créditos sem prazo de validade</div></div><button class="plan-btn" onclick="_setUserPlan(15);closePricing();">TESTAR PACK PRO</button><div class="plan-note">~R$1,66 por simulação</div></div>';
   overlay.style.display = 'block';
   overlay.scrollTop = 0;
 }
@@ -1598,6 +1802,7 @@ async function _doLogin() {
     _user = r.data.user;
     closeLogin();
     _updateMenuForUser();
+    _loadUserSimCount();
   }
 }
 
@@ -1613,6 +1818,7 @@ async function _doSignup() {
     _showAuthMsg('✓ CONTA CRIADA COM SUCESSO! Bem-vindo ao Simly.', 'var(--cyan)');
     _user = r.data.user;
     _updateMenuForUser();
+    _loadUserSimCount();
     setTimeout(closeLogin, 5000);
   }
 }
@@ -1620,7 +1826,9 @@ async function _doSignup() {
 async function _logout() {
   await _sb.auth.signOut();
   _user = null;
+  window._userSimCount = 0;
   _updateMenuForUser();
+  _renderHud();
 }
 
 async function openMySims() {
@@ -1669,8 +1877,10 @@ async function openMySims() {
         + '<div class="sim-card-date">' + date + '</div>'
         + '</div>'
         + (hyp ? '<div class="sim-card-hypothesis">&ldquo;' + hyp + '&rdquo;</div>' : '')
-        + '<div class="sim-card-arrow">VER ANÁLISE →</div>'
-        + '<button onclick="event.stopPropagation();_confirmDelete(&apos;' + s.id + '&apos;)" style="position:absolute;top:12px;right:12px;font-family:var(--px);font-size:6px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:6px 8px;cursor:pointer;">✕ DEL</button>'
+        + '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">'
+        + '<div style="font-family:Share Tech Mono,monospace;font-size:11px;color:var(--muted2);letter-spacing:0.1em">VER ANÁLISE →</div>'
+        + '<button onclick="event.stopPropagation();_confirmDelete(&apos;' + s.id + '&apos;)" style="font-family:Share Tech Mono,monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--pink);background:transparent;border:1px solid rgba(255,45,120,0.3);padding:6px 12px;cursor:pointer;">DELETAR</button>'
+        + '</div>'
         + '</div>';
     }).join('');
   } catch(e) {
@@ -1706,7 +1916,7 @@ async function _doDelete() {
   var id = window._deleteId;
   _cancelDelete();
   if (!id) return;
-  await _sb.from('simulations').delete().eq('id', id);
+  await _sb.from('simulations').delete().eq('id', id).eq('user_id', _user.id);
   openMySims();
 }
 
