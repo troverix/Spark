@@ -5,12 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Simly</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=DM+Sans:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=DM+Sans:wght@400;500&display=swap');
 :root{
   --bg:#070714;--surface:#0d0d2b;--surface2:#12123a;--border:#2a2a6e;
   --pink:#ff2d78;--purple:#b44fff;--cyan:#00f5ff;
   --text:#e8e8ff;--muted:#4a4a8a;--muted2:#7a7aaa;
   --grid:rgba(180,79,255,0.07);
+  --px:'Press Start 2P',monospace;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100dvh;display:flex;align-items:flex-start;justify-content:center;padding:20px 16px 80px;overflow-x:hidden;}
@@ -194,6 +195,96 @@ textarea::placeholder{color:var(--muted);font-style:italic;}
 @keyframes pulse{0%,100%{box-shadow:0 0 20px rgba(0,245,255,0.1);}50%{box-shadow:0 0 40px rgba(0,245,255,0.25);}}
 @media(hover:hover){.btn-start:hover{background:rgba(0,245,255,0.15);animation:none;}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+/* ── 16BIT HYBRID STYLES ── */
+/* Scanlines */
+body::before{background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px),repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.04) 3px,rgba(0,0,0,0.04) 4px);}
+
+/* Logo */
+.logo{font-family:'Orbitron',monospace;font-size:clamp(32px,10vw,52px);font-weight:900;letter-spacing:0.15em;line-height:1;color:var(--cyan);text-shadow:0 0 20px rgba(0,245,255,0.6),0 0 60px rgba(0,245,255,0.2);margin-bottom:6px;}
+.logo-sub{font-family:var(--px);font-size:clamp(6px,2vw,8px);letter-spacing:0.2em;text-transform:uppercase;color:var(--purple);text-shadow:0 0 10px rgba(180,79,255,0.5);}
+
+/* Progress labels pixel */
+.progress-label{font-family:var(--px);font-size:7px;letter-spacing:0.15em;}
+.prog-step{border-radius:0;}
+
+/* Card titles pixel */
+.step-title{font-family:var(--px);font-size:clamp(14px,4vw,18px);font-weight:400;letter-spacing:0.04em;}
+.card-title{font-family:var(--px);font-size:clamp(10px,3vw,13px);font-weight:400;letter-spacing:0.06em;}
+.badge{font-family:var(--px);font-size:6px;letter-spacing:0.08em;}
+
+/* Input label pixel */
+.input-lbl{font-family:var(--px);font-size:7px;letter-spacing:0.15em;}
+
+/* Buttons pixel */
+.btn{font-family:var(--px);font-size:clamp(7px,2vw,9px);letter-spacing:0.08em;border-radius:0;}
+.btn-start{font-family:var(--px);font-size:clamp(9px,2.5vw,11px);letter-spacing:0.08em;border-radius:0;animation:pulse 2s infinite;}
+.btn-start::before{content:'▶ ';animation:blink16 0.8s steps(1) infinite;}
+.btn-start::after{content:' ◀';animation:blink16 0.8s steps(1) infinite;}
+@keyframes blink16{0%,49%{opacity:1}50%,100%{opacity:0}}
+
+/* Intro steps pixel numbers */
+.intro-step-num{font-family:var(--px);font-size:12px;font-weight:400;}
+.intro-step-text strong{font-family:var(--px);font-size:7px;letter-spacing:0.08em;}
+
+/* Outcome badge pixel */
+.outcome-lbl{font-family:var(--px);font-size:7px;letter-spacing:0.15em;}
+
+/* Route buttons pixel */
+.route-title{font-family:var(--px);font-size:clamp(10px,3vw,12px);font-weight:400;letter-spacing:0.04em;}
+.route-time{font-family:var(--px);font-size:6px;letter-spacing:0.1em;}
+
+/* RPG chapter label pixel */
+.chap-label{font-family:var(--px);font-size:12px;font-weight:400;}
+
+/* Verdict screen pixel */
+.verdict-pre{font-family:var(--px);font-size:8px;letter-spacing:0.2em;}
+.verdict-score{font-family:var(--px);font-size:clamp(8px,2.5vw,10px);letter-spacing:0.1em;}
+
+/* Dashboard labels pixel */
+.dash-logo{font-family:var(--px);font-size:8px;letter-spacing:0.15em;}
+.dash-score-lbl{font-family:var(--px);font-size:7px;letter-spacing:0.1em;}
+.dash-sec-lbl{font-family:var(--px);font-size:7px;letter-spacing:0.12em;}
+.dash-footer{font-family:var(--px);font-size:6px;letter-spacing:0.1em;}
+
+/* Share area pixel */
+.share-lbl{font-family:var(--px);font-size:6px;letter-spacing:0.15em;}
+.btn-wa{font-family:var(--px);font-size:clamp(7px,2vw,9px);letter-spacing:0.08em;}
+.btn-copy{font-family:var(--px);font-size:clamp(6px,1.8vw,8px);letter-spacing:0.05em;}
+
+/* Loading pixel */
+.loading{font-family:var(--px);font-size:7px;letter-spacing:0.1em;}
+
+/* Streak pixel */
+.streak{font-family:var(--px);font-size:7px;letter-spacing:0.1em;}
+
+/* Disclaimer pixel */
+.disclaimer p{font-family:var(--px);font-size:6px;letter-spacing:0.05em;line-height:2;}
+
+/* Pixel corners on cards */
+.card{position:relative;}
+
+/* Sprite in intro */
+.pixel-sprite-intro{
+  display:flex;justify-content:center;margin-bottom:16px;
+  animation:float16 1.5s ease-in-out infinite alternate;
+  filter:drop-shadow(0 0 8px rgba(0,245,255,0.4));
+}
+@keyframes float16{from{transform:translateY(0)}to{transform:translateY(-5px)}}
+
+/* Lang btn pixel */
+.lang-btn{font-family:var(--px);font-size:10px;letter-spacing:0.1em;}
+
+/* Mode btn pixel */
+.mode-btn{font-family:var(--px);}
+
+/* Ex label pixel */
+.ex-lbl{font-family:var(--px);font-size:7px;letter-spacing:0.1em;}
+
+/* Section labels in auth pixel */
+.auth-lbl{font-family:var(--px);font-size:7px;letter-spacing:0.1em;}
+.auth-tab{font-family:var(--px);font-size:7px;letter-spacing:0.08em;}
+.auth-btn{font-family:var(--px);font-size:9px;letter-spacing:0.08em;}
+
 @media(max-width:380px){.btn-row.two{grid-template-columns:1fr;}.share-btns{flex-wrap:wrap;}}
 /* Paywall */
 #paywallOverlay{position:fixed;inset:0;z-index:998;display:none;align-items:flex-end;justify-content:center;background:rgba(7,7,20,0.85);backdrop-filter:blur(6px);}
@@ -331,6 +422,9 @@ textarea::placeholder{color:var(--muted);font-style:italic;}
   <button class="hmenu-item" id="hmenu-perfil" style="display:none;color:var(--muted2)" onclick="openMySims();toggleMenu()">MINHAS SIMULAÇÕES</button>
   <button class="hmenu-item" id="hmenu-sair" style="display:none;color:var(--pink)" onclick="_logout();toggleMenu()">SAIR</button>
 </div>
+<div id="mockBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:1000;background:rgba(255,45,120,0.15);border-top:1px solid var(--pink);padding:6px;text-align:center;font-family:Share Tech Mono,monospace;font-size:8px;letter-spacing:0.2em;color:var(--pink);text-transform:uppercase">
+  ⚡ MODO TESTE — API não está sendo chamada
+</div>
 <div id="installBanner">
   <button id="installBtn">📲 INSTALAR APP</button>
   <button id="installClose">✕</button>
@@ -438,6 +532,36 @@ var chapNum = 0;
 var simCount = 0;
 var state = {spark:'', objective:'', outcome:'', title:'', analysis:null};
 try { simCount = parseInt(localStorage.getItem('simly_n') || '0'); } catch(e) {}
+
+// ── MOCK MODE ──
+var _mockMode = false;
+try { _mockMode = new URLSearchParams(window.location.search).get('mock') === '1'; } catch(e) {}
+
+var _mockAnalysis = {
+  score: 78,
+  scoreLabel: 'MERCADO EMERGENTE',
+  marketInsight: 'O mercado global de ferramentas de validação de ideias cresce 34% ao ano. No Brasil, 17 milhões de MEIs ativos são potenciais usuários.',
+  similarProjects: [
+    {name: 'IdeaFlip', description: 'Brainstorming colaborativo com votação. Foco em times, não validação individual.'},
+    {name: 'Strategyzer', description: 'Business Model Canvas digital. Mais complexo, sem simulação por IA.'}
+  ],
+  strengths: ['Demanda comprovada', 'Baixo custo de aquisição', 'Modelo escalável'],
+  risks: [
+    {risk: 'Dependência de API de terceiros', mitigation: 'Construir camada de abstração para troca de provedor'},
+    {risk: 'Percepção de produto fútil', mitigation: 'Cases reais de decisões tomadas com base na análise'}
+  ],
+  solutions: [
+    'Lançar versão gratuita e coletar 500 usuários antes de monetizar',
+    'Parceria com aceleradoras para oferecer como ferramenta de pré-seleção',
+    'Versão white-label para consultorias e hubs de inovação'
+  ],
+  teamNeeded: true,
+  teamRoles: ['Dev Full-Stack', 'Designer UX/UI'],
+  teamCostData: 'Estimativa de investimento em equipe: R$12k–20k/mês (freelance/PJ) ou R$18k–30k/mês (CLT).'
+};
+
+var _mockOutcome = 'Pessoas criativas pagariam para ter suas ideias avaliadas com dados reais antes de investir tempo e dinheiro.';
+var _mockTitle = 'Mercado de Ideias Vivas';
 
 // ── TRANSLATIONS ──
 var TX = {
@@ -724,7 +848,8 @@ function showIntro(a) {
   var desc = tx.introDesc;
   a.innerHTML = '<div class="intro-screen">'
     + '<div class="intro-logo">SIMLY</div>'
-    + '<div class="intro-sub">simulate before you build</div>'
+    + '<div class="intro-sub">' + (lang==='pt'?'SIMULE ANTES DE CONSTRUIR':'SIMULATE BEFORE YOU BUILD') + '</div>'
+    + '<div class="pixel-sprite-intro"><svg width="48" height="48" viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated"><rect x="5" y="0" width="2" height="1" fill="#ffff00"/><rect x="4" y="1" width="4" height="1" fill="#ffff00"/><rect x="3" y="2" width="6" height="1" fill="#00f5ff"/><rect x="2" y="3" width="8" height="1" fill="#00f5ff"/><rect x="1" y="4" width="10" height="2" fill="#00f5ff"/><rect x="2" y="6" width="8" height="1" fill="#b44fff"/><rect x="0" y="4" width="1" height="3" fill="#ff2d78"/><rect x="11" y="4" width="1" height="3" fill="#ff2d78"/><rect x="4" y="7" width="4" height="1" fill="#e8e8ff"/><rect x="5" y="8" width="1" height="3" fill="#ff6600"/><rect x="6" y="8" width="1" height="3" fill="#ff4400"/><rect x="4" y="10" width="1" height="1" fill="#ff6600"/><rect x="7" y="10" width="1" height="1" fill="#ff6600"/></svg></div>'
     + '<div class="lang-toggle">'
     + '<button class="lang-btn ' + (lang==='pt'?'active-pt':'inactive') + '" onclick="setLang(&apos;pt&apos;)">PT</button>'
     + '<button class="lang-btn ' + (lang==='en'?'active-en':'inactive') + '" onclick="setLang(&apos;en&apos;)">EN</button>'
@@ -737,7 +862,7 @@ function showIntro(a) {
     + '<div class="intro-note">&#9672; ' + tx.rpgNote + '</div>'
     + '<div class="intro-divider"></div>'
     + '<div class="intro-cta">' + tx.ctaLabel + '</div>'
-    + '<button class="btn-start" onclick="startFromIntro()">' + tx.startBtn + '</button>'
+    + '<button class="btn-start" onclick="startFromIntro()">' + (lang==='pt'?'PRESS START':'PRESS START') + '</button>'
     + '</div>';
 }
 
@@ -1196,6 +1321,28 @@ function exportPDF() {
 
 // ── API ──
 async function api(prompt, maxTokens) {
+  if (_mockMode) {
+    await new Promise(function(r){ setTimeout(r, 900); });
+    // Hypothesis generation
+    if (prompt.indexOf('hipotese') > -1 || prompt.indexOf('hypothesis') > -1 || prompt.indexOf('Hipotese') > -1 || prompt.indexOf('Hypothesis') > -1) {
+      var spark = state.spark || 'sua ideia';
+      var obj = state.objective || 'gerar valor';
+      var hyp = lang === 'pt'
+        ? spark.charAt(0).toUpperCase() + spark.slice(1) + ' pode resolver uma necessidade real — se houver um caminho claro entre a ideia e quem precisa dela.'
+        : spark.charAt(0).toUpperCase() + spark.slice(1) + ' could solve a real need — if there is a clear path between the idea and who needs it.';
+      var title = spark.split(' ').slice(0,4).map(function(w){ return w.charAt(0).toUpperCase()+w.slice(1); }).join(' ');
+      return {outcome: hyp, title: title};
+    }
+    // Score analysis — use spark in mock data
+    var mockScore = 55 + Math.floor(Math.random()*35);
+    return Object.assign({}, _mockAnalysis, {
+      score: mockScore,
+      scoreLabel: mockScore >= 85 ? (lang==='pt'?'EXCEPCIONAL':'EXCEPTIONAL') : mockScore >= 65 ? (lang==='pt'?'MERCADO EMERGENTE':'EMERGING MARKET') : (lang==='pt'?'MERCADO INCERTO':'UNCERTAIN MARKET'),
+      marketInsight: lang==='pt'
+        ? 'O segmento relacionado a "' + (state.spark||'sua ideia').substring(0,40) + '" apresenta crescimento consistente. Demanda identificada entre empreendedores e profissionais em transição.'
+        : 'The segment related to "' + (state.spark||'your idea').substring(0,40) + '" shows consistent growth. Demand identified among entrepreneurs and professionals in transition.'
+    });
+  }
   var res = await fetch('/.netlify/functions/ai', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
@@ -1209,6 +1356,10 @@ async function api(prompt, maxTokens) {
 }
 
 async function apiSearch(prompt, maxTokens) {
+  if (_mockMode) {
+    await new Promise(function(r){ setTimeout(r, 600); });
+    return 'Mercado global de R$2bi crescendo 34% ao ano. Brasil com 17M de MEIs ativos.';
+  }
   var res = await fetch('/.netlify/functions/ai-search', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
@@ -1603,6 +1754,7 @@ function goToPayment() {
 
 render();
 _showAuth();
+if (_mockMode) { var mb = document.getElementById('mockBanner'); if (mb) mb.style.display = 'block'; }
 
 // ── PWA INSTALL BANNER ──
 var _deferredPrompt = null;
