@@ -1415,7 +1415,7 @@ function showDashboard(a) {
     + (_user && (window._userSimLimit || 0) > 2
       ? '<div style="padding:12px 20px;display:flex;gap:10px;border-top:1px solid var(--border)">'
         + '<button class="btn btn-ghost" style="flex:1" onclick="_discardSim()">✕ ' + (lang==='pt'?'DESCARTAR':'DISCARD') + '</button>'
-        + '<button class="btn btn-cyan" style="flex:2" onclick="exportPDF()"><span style="font-size:14px">&#128196;</span> ' + (lang==='pt'?'SALVAR PDF':'SAVE PDF') + '</button>'
+        + '<button class="btn btn-cyan" style="flex:2" onclick="exportPDF()"><span style="font-size:14px">&#128196;</span> PDF</button>'
         + '</div>'
       : '<div style="padding:12px 20px;border-top:1px solid var(--border)">'
         + '<button onclick="openPricing()" style="width:100%;font-family:var(--px);font-size:8px;padding:14px;background:rgba(180,79,255,0.08);border:2px solid var(--purple);color:var(--purple);cursor:pointer;letter-spacing:0.08em;line-height:1.8">'
@@ -1882,7 +1882,10 @@ async function openMySims() {
         + (hyp ? '<div class="sim-card-hypothesis">&ldquo;' + hyp + '&rdquo;</div>' : '')
         + '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">'
         + '<div style="font-family:Share Tech Mono,monospace;font-size:11px;color:var(--muted2);letter-spacing:0.1em">VER ANÁLISE →</div>'
+        + '<div style="display:flex;gap:6px;">'
+        + ((window._userSimLimit || 2) > 2 ? '<button onclick="event.stopPropagation();_exportSimPDF(' + idx + ')" style="font-family:Share Tech Mono,monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--cyan);background:transparent;border:1px solid rgba(0,245,255,0.3);padding:6px 12px;cursor:pointer;">PDF</button>' : '')
         + '<button onclick="event.stopPropagation();_confirmDelete(&apos;' + s.id + '&apos;)" style="font-family:Share Tech Mono,monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--pink);background:transparent;border:1px solid rgba(255,45,120,0.3);padding:6px 12px;cursor:pointer;">DELETAR</button>'
+        + '</div>'
         + '</div>'
         + '</div>';
     }).join('');
@@ -1925,6 +1928,24 @@ async function _doDelete() {
 
 async function _deleteSim(id) {
   _confirmDelete(id);
+}
+
+function _exportSimPDF(idx) {
+  var s = window._simsCache && window._simsCache[idx];
+  if (!s) return;
+  // Temporarily load sim into state and export
+  var prevState = JSON.parse(JSON.stringify(state));
+  var prevAnalysis = state.analysis;
+  state.analysis = typeof s.analysis === 'string' ? JSON.parse(s.analysis) : s.analysis;
+  state.outcome = s.outcome || '';
+  state.title = s.title || '';
+  exportPDF();
+  // Restore state after brief delay
+  setTimeout(function() {
+    state.analysis = prevAnalysis;
+    state.outcome = prevState.outcome;
+    state.title = prevState.title;
+  }, 500);
 }
 
 function _openSimDetail(idx) {
