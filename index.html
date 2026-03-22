@@ -1439,8 +1439,10 @@ async function _doSignup() {
   if (r.error) {
     _showAuthMsg('ERRO: ' + (r.error.message || 'tente novamente'), 'var(--pink)');
   } else {
-    _showAuthMsg('CONTA CRIADA! Verifique seu email para confirmar.', 'var(--cyan)');
-    setTimeout(closeLogin, 3000);
+    _showAuthMsg('✓ CONTA CRIADA COM SUCESSO! Bem-vindo ao Simly.', 'var(--cyan)');
+    _user = r.data.user;
+    _updateMenuForUser();
+    setTimeout(closeLogin, 5000);
   }
 }
 
