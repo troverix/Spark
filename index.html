@@ -533,8 +533,9 @@ async function _loadUserSimCount() {
       .eq('user_id', _user.id)
       .gte('created_at', startOfMonth.toISOString());
     window._userSimCount = r.count || 0;
-    window._userSimLimit = 2; // FREE plan
+    window._userSimLimit = window._userSimLimit || 2; // keep plan if already set
     _updateStreakDisplay();
+    _renderHud();
   } catch(e) { window._userSimCount = 0; }
 }
 
@@ -1029,6 +1030,7 @@ function _discardSim() {
 function _setUserPlan(limit) {
   window._userSimLimit = limit;
   _updateStreakDisplay();
+  _renderHud();
   var msg = limit === 5 ? 'PACK STARTER ATIVADO · 5 SIMULAÇÕES' : 'PACK PRO ATIVADO · 15 SIMULAÇÕES';
   var toast = document.createElement('div');
   toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:2000;background:var(--surface);border:1px solid var(--cyan);padding:10px 20px;font-family:var(--px);font-size:7px;color:var(--cyan);letter-spacing:0.1em;white-space:nowrap;';
@@ -1803,6 +1805,7 @@ async function _doLogin() {
     closeLogin();
     _updateMenuForUser();
     _loadUserSimCount();
+    _renderHud();
   }
 }
 
