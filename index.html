@@ -5,12 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Simly</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=DM+Sans:wght@400;500&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=DM+Sans:wght@400;500&display=swap');
 :root{
   --bg:#070714;--surface:#0d0d2b;--surface2:#12123a;--border:#2a2a6e;
   --pink:#ff2d78;--purple:#b44fff;--cyan:#00f5ff;
   --text:#e8e8ff;--muted:#4a4a8a;--muted2:#7a7aaa;
   --grid:rgba(180,79,255,0.07);
+  --px:'Press Start 2P',monospace;
 }
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
 body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100dvh;display:flex;align-items:flex-start;justify-content:center;padding:20px 16px 80px;overflow-x:hidden;}
@@ -109,28 +110,51 @@ textarea::placeholder{color:var(--muted);font-style:italic;}
 @keyframes verdictPop{from{opacity:0;transform:scale(0.4)}to{opacity:1;transform:scale(1)}}
 .dashboard{background:var(--surface);border:1px solid var(--border);margin-top:16px;position:relative;overflow:hidden;}
 .dashboard::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),var(--purple),var(--pink),transparent);}
-.dash-header{background:linear-gradient(135deg,rgba(180,79,255,0.2),rgba(0,245,255,0.1));padding:20px;border-bottom:1px solid var(--border);}
-.dash-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;}
-.dash-logo{font-family:'Orbitron',monospace;font-size:11px;letter-spacing:0.25em;color:rgba(0,245,255,0.6);font-weight:700;}
-.dash-score{font-family:'Orbitron',monospace;font-size:42px;font-weight:900;color:var(--cyan);line-height:1;text-shadow:0 0 20px rgba(0,245,255,0.4);}
-.dash-score span{font-size:14px;opacity:0.7;margin-left:2px;}
-.dash-idea{font-family:'Orbitron',monospace;font-size:clamp(16px,4.5vw,20px);font-weight:700;color:var(--text);line-height:1.1;margin-bottom:4px;}
-.dash-score-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:rgba(0,245,255,0.6);}
-.dash-body{padding:16px 20px;}
-.dash-sec{margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border);}
-.dash-sec:last-child{border-bottom:none;margin-bottom:0;padding-bottom:0;}
-.dash-sec-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:var(--pink);margin-bottom:8px;}
-.dash-tags{display:flex;flex-wrap:wrap;gap:6px;}
-.dash-tag{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:0.08em;padding:4px 10px;background:rgba(0,245,255,0.06);border:1px solid rgba(0,245,255,0.2);color:var(--cyan);}
-.dash-item{background:rgba(0,0,0,0.3);border:1px solid var(--border);padding:10px 14px;margin-bottom:6px;}
+/* Verdict banner */
+.dash-verdict-banner{padding:14px 20px;text-align:center;border-bottom:1px solid rgba(0,245,255,0.3);}
+.dash-verdict-banner.funded{background:rgba(0,245,255,0.08);}
+.dash-verdict-banner.drawing{background:rgba(255,45,120,0.08);border-bottom-color:rgba(255,45,120,0.3);}
+.dash-verdict-word{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(16px,4.5vw,20px);letter-spacing:0.2em;}
+.dash-verdict-banner.funded .dash-verdict-word{color:var(--cyan);}
+.dash-verdict-banner.drawing .dash-verdict-word{color:var(--pink);}
+/* Header */
+.dash-header{padding:20px;border-bottom:1px solid var(--border);background:linear-gradient(135deg,rgba(180,79,255,0.1),rgba(0,245,255,0.05));}
+.dash-logo{font-family:'Orbitron',monospace;font-size:10px;letter-spacing:0.25em;color:rgba(0,245,255,0.7);font-weight:700;margin-bottom:8px;}
+.dash-idea{font-family:'Orbitron',monospace;font-size:clamp(16px,4.5vw,20px);font-weight:700;color:#f0f0ff;line-height:1.2;margin-bottom:14px;}
+.dash-score-row{display:flex;align-items:center;gap:16px;}
+.dash-score{font-family:'Orbitron',monospace;font-size:clamp(64px,18vw,88px);font-weight:900;color:var(--cyan);line-height:1;text-shadow:0 0 30px rgba(0,245,255,0.5),0 0 60px rgba(0,245,255,0.2);}
+.dash-score-right{display:flex;flex-direction:column;gap:5px;}
+.dash-score-lbl{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:0.15em;text-transform:uppercase;color:rgba(0,245,255,0.85);}
+.dash-score-bar-track{height:7px;background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);overflow:hidden;width:140px;}
+.dash-score-bar-fill{height:100%;background:linear-gradient(90deg,var(--purple),var(--cyan));transition:width 0.8s ease;}
+/* Body */
+.dash-body{padding:0;}
+.dash-sec{padding:16px 20px;border-bottom:1px solid var(--border);background:#0a0a22;}
+.dash-sec:last-child{border-bottom:none;}
+.dash-sec-lbl{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:0.2em;text-transform:uppercase;color:#fff;margin-bottom:12px;display:inline-flex;align-items:center;gap:8px;background:rgba(255,45,120,0.2);border:1px solid rgba(255,45,120,0.35);padding:5px 12px;}
+.dash-sec-lbl::before{content:'';width:6px;height:6px;background:var(--pink);flex-shrink:0;}
+.dash-tags{display:flex;flex-wrap:wrap;gap:8px;}
+.dash-tag{font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:0.08em;padding:6px 12px;background:rgba(0,245,255,0.08);border:1px solid rgba(0,245,255,0.25);color:#00f5ff;}
+.dash-item{background:rgba(255,45,120,0.06);border:1px solid rgba(255,45,120,0.2);padding:12px 16px;margin-bottom:8px;}
 .dash-item:last-child{margin-bottom:0;}
-.dash-item-main{font-size:clamp(12px,3.5vw,13px);color:var(--text);line-height:1.5;margin-bottom:3px;}
-.dash-item-sub{font-size:clamp(11px,3.2vw,12px);font-style:italic;line-height:1.5;}
-.mit{color:var(--cyan);}
-.sol{color:var(--purple);}
-.market-box{background:rgba(180,79,255,0.06);border:1px solid rgba(180,79,255,0.2);padding:12px 14px;font-size:clamp(12px,3.5vw,13px);color:var(--text);line-height:1.6;}
+.dash-item-main{font-size:14px;color:#f0f0ff;line-height:1.5;margin-bottom:5px;font-weight:500;}
+.dash-item-sub{font-size:13px;font-style:italic;line-height:1.5;color:#00f5ff;font-weight:500;}
+.sol-item{background:rgba(180,79,255,0.06);border:1px solid rgba(180,79,255,0.2);padding:10px 14px;margin-bottom:8px;display:flex;align-items:flex-start;gap:12px;}
+.sol-item:last-child{margin-bottom:0;}
+.sol-num{font-family:'Orbitron',monospace;font-size:20px;font-weight:900;color:#c86fff;flex-shrink:0;line-height:1.1;}
+.sol-txt{font-size:14px;color:#d0d0f0;line-height:1.6;padding-top:1px;}
+.mit{color:#00f5ff;}
+.sol{color:#c86fff;}
+.market-box{background:rgba(180,79,255,0.06);border:1px solid rgba(180,79,255,0.2);padding:14px 16px;font-size:14px;color:#d8d8f8;line-height:1.7;}
+/* Similar */
+.similar-item{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid #1a1a3e;}
+.similar-item:last-child{border-bottom:none;padding-bottom:0;}
+.similar-dot{width:10px;height:10px;background:#c86fff;flex-shrink:0;margin-top:5px;}
+.similar-name{font-size:15px;color:#f0f0ff;font-weight:600;margin-bottom:4px;}
+.similar-desc{font-size:13px;color:#c0c0e0;line-height:1.6;}
+.similar-tone{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:#c86fff;margin-top:5px;}
 .disclaimer{padding:12px 20px;border-top:1px solid var(--border);background:rgba(0,0,0,0.2);}
-.disclaimer p{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:0.08em;line-height:1.8;color:var(--muted);text-align:center;}
+.disclaimer p{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:0.08em;line-height:1.8;color:#6a6a9a;text-align:center;}
 .share-area{padding:16px 20px;border-top:1px solid var(--border);}
 .share-lbl{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:10px;text-align:center;}
 .share-btns{display:flex;gap:8px;}
@@ -171,6 +195,96 @@ textarea::placeholder{color:var(--muted);font-style:italic;}
 @keyframes pulse{0%,100%{box-shadow:0 0 20px rgba(0,245,255,0.1);}50%{box-shadow:0 0 40px rgba(0,245,255,0.25);}}
 @media(hover:hover){.btn-start:hover{background:rgba(0,245,255,0.15);animation:none;}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+/* ── 16BIT HYBRID STYLES ── */
+/* Scanlines */
+body::before{background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px),repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.04) 3px,rgba(0,0,0,0.04) 4px);}
+
+/* Logo */
+.logo{font-family:'Orbitron',monospace;font-size:clamp(32px,10vw,52px);font-weight:900;letter-spacing:0.15em;line-height:1;color:var(--cyan);text-shadow:0 0 20px rgba(0,245,255,0.6),0 0 60px rgba(0,245,255,0.2);margin-bottom:6px;}
+.logo-sub{font-family:var(--px);font-size:clamp(6px,2vw,8px);letter-spacing:0.2em;text-transform:uppercase;color:var(--purple);text-shadow:0 0 10px rgba(180,79,255,0.5);}
+
+/* Progress labels pixel */
+.progress-label{font-family:var(--px);font-size:7px;letter-spacing:0.15em;}
+.prog-step{border-radius:0;}
+
+/* Card titles pixel */
+.step-title{font-family:var(--px);font-size:clamp(14px,4vw,18px);font-weight:400;letter-spacing:0.04em;}
+.card-title{font-family:var(--px);font-size:clamp(10px,3vw,13px);font-weight:400;letter-spacing:0.06em;}
+.badge{font-family:var(--px);font-size:6px;letter-spacing:0.08em;}
+
+/* Input label pixel */
+.input-lbl{font-family:var(--px);font-size:7px;letter-spacing:0.15em;}
+
+/* Buttons pixel */
+.btn{font-family:var(--px);font-size:clamp(7px,2vw,9px);letter-spacing:0.08em;border-radius:0;}
+.btn-start{font-family:var(--px);font-size:clamp(9px,2.5vw,11px);letter-spacing:0.08em;border-radius:0;animation:pulse 2s infinite;}
+.btn-start::before{content:'▶ ';animation:blink16 0.8s steps(1) infinite;}
+.btn-start::after{content:' ◀';animation:blink16 0.8s steps(1) infinite;}
+@keyframes blink16{0%,49%{opacity:1}50%,100%{opacity:0}}
+
+/* Intro steps pixel numbers */
+.intro-step-num{font-family:var(--px);font-size:12px;font-weight:400;}
+.intro-step-text strong{font-family:var(--px);font-size:7px;letter-spacing:0.08em;}
+
+/* Outcome badge pixel */
+.outcome-lbl{font-family:var(--px);font-size:7px;letter-spacing:0.15em;}
+
+/* Route buttons pixel */
+.route-title{font-family:var(--px);font-size:clamp(10px,3vw,12px);font-weight:400;letter-spacing:0.04em;}
+.route-time{font-family:var(--px);font-size:6px;letter-spacing:0.1em;}
+
+/* RPG chapter label pixel */
+.chap-label{font-family:var(--px);font-size:12px;font-weight:400;}
+
+/* Verdict screen pixel */
+.verdict-pre{font-family:var(--px);font-size:8px;letter-spacing:0.2em;}
+.verdict-score{font-family:var(--px);font-size:clamp(8px,2.5vw,10px);letter-spacing:0.1em;}
+
+/* Dashboard labels pixel */
+.dash-logo{font-family:var(--px);font-size:8px;letter-spacing:0.15em;}
+.dash-score-lbl{font-family:var(--px);font-size:7px;letter-spacing:0.1em;}
+.dash-sec-lbl{font-family:var(--px);font-size:7px;letter-spacing:0.12em;}
+.dash-footer{font-family:var(--px);font-size:6px;letter-spacing:0.1em;}
+
+/* Share area pixel */
+.share-lbl{font-family:var(--px);font-size:6px;letter-spacing:0.15em;}
+.btn-wa{font-family:var(--px);font-size:clamp(7px,2vw,9px);letter-spacing:0.08em;}
+.btn-copy{font-family:var(--px);font-size:clamp(6px,1.8vw,8px);letter-spacing:0.05em;}
+
+/* Loading pixel */
+.loading{font-family:var(--px);font-size:7px;letter-spacing:0.1em;}
+
+/* Streak pixel */
+.streak{font-family:var(--px);font-size:7px;letter-spacing:0.1em;}
+
+/* Disclaimer pixel */
+.disclaimer p{font-family:var(--px);font-size:6px;letter-spacing:0.05em;line-height:2;}
+
+/* Pixel corners on cards */
+.card{position:relative;}
+
+/* Sprite in intro */
+.pixel-sprite-intro{
+  display:flex;justify-content:center;margin-bottom:16px;
+  animation:float16 1.5s ease-in-out infinite alternate;
+  filter:drop-shadow(0 0 8px rgba(0,245,255,0.4));
+}
+@keyframes float16{from{transform:translateY(0)}to{transform:translateY(-5px)}}
+
+/* Lang btn pixel */
+.lang-btn{font-family:var(--px);font-size:10px;letter-spacing:0.1em;}
+
+/* Mode btn pixel */
+.mode-btn{font-family:var(--px);}
+
+/* Ex label pixel */
+.ex-lbl{font-family:var(--px);font-size:7px;letter-spacing:0.1em;}
+
+/* Section labels in auth pixel */
+.auth-lbl{font-family:var(--px);font-size:7px;letter-spacing:0.1em;}
+.auth-tab{font-family:var(--px);font-size:7px;letter-spacing:0.08em;}
+.auth-btn{font-family:var(--px);font-size:9px;letter-spacing:0.08em;}
+
 @media(max-width:380px){.btn-row.two{grid-template-columns:1fr;}.share-btns{flex-wrap:wrap;}}
 /* Paywall */
 #paywallOverlay{position:fixed;inset:0;z-index:998;display:none;align-items:flex-end;justify-content:center;background:rgba(7,7,20,0.85);backdrop-filter:blur(6px);}
@@ -190,7 +304,101 @@ textarea::placeholder{color:var(--muted);font-style:italic;}
 .dash-blur{filter:blur(5px);pointer-events:none;user-select:none;}
 .dash-unlock-btn-wrap{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;z-index:10;}
 .dash-unlock-btn{font-family:"Orbitron",monospace;font-weight:900;font-size:clamp(10px,2.8vw,12px);letter-spacing:0.08em;text-transform:uppercase;padding:20px 24px;background:rgba(7,7,20,0.95);border:2px solid var(--cyan);color:var(--cyan);cursor:pointer;touch-action:manipulation;text-align:center;box-shadow:0 0 40px rgba(0,245,255,0.3),inset 0 0 20px rgba(0,245,255,0.05);max-width:300px;width:90%;line-height:1;display:flex;flex-direction:column;align-items:center;gap:10px;}
+/* Login & Pricing */
+#authOverlay{position:fixed;inset:0;z-index:1000;background:var(--bg);display:flex;align-items:flex-start;justify-content:center;padding:20px 16px 80px;overflow-y:auto;}
+#authOverlay::before{content:'';position:fixed;inset:0;background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;}
+#authOverlay::after{content:'';position:fixed;bottom:0;left:0;right:0;height:40%;background:linear-gradient(to top,rgba(180,79,255,0.06),transparent);pointer-events:none;z-index:0;}
+.auth-wrap{position:relative;z-index:1;width:100%;max-width:480px;}
+.auth-logo{font-family:'Orbitron',monospace;font-size:clamp(32px,10vw,48px);font-weight:900;letter-spacing:0.15em;color:var(--cyan);text-shadow:0 0 20px rgba(0,245,255,0.6),0 0 60px rgba(0,245,255,0.2);text-align:center;margin-bottom:4px;}
+.auth-sub{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:0.3em;text-transform:uppercase;color:var(--purple);text-align:center;margin-bottom:28px;}
+.auth-card{background:var(--surface);border:1px solid var(--border);position:relative;overflow:hidden;margin-bottom:16px;}
+.auth-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--purple),var(--cyan),var(--purple),transparent);}
+.auth-card-body{padding:24px;}
+.auth-tabs{display:flex;border-bottom:1px solid var(--border);margin-bottom:20px;}
+.auth-tab{flex:1;font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;padding:12px;text-align:center;cursor:pointer;color:var(--muted2);border-bottom:2px solid transparent;transition:all 0.2s;}
+.auth-tab.active{color:var(--cyan);border-bottom-color:var(--cyan);}
+.auth-field{margin-bottom:14px;}
+.auth-lbl{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--cyan);margin-bottom:6px;display:block;}
+.auth-input{width:100%;background:rgba(0,0,0,0.4);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;padding:13px;outline:none;transition:border-color 0.2s;border-radius:0;}
+.auth-input:focus{border-color:var(--cyan);box-shadow:0 0 0 2px rgba(0,245,255,0.1);}
+.auth-input::placeholder{color:var(--muted);font-style:italic;}
+.auth-btn{width:100%;font-family:'Orbitron',monospace;font-weight:900;font-size:13px;letter-spacing:0.12em;text-transform:uppercase;padding:17px;background:rgba(0,245,255,0.08);border:2px solid var(--cyan);color:var(--cyan);cursor:pointer;transition:all 0.2s;margin-top:4px;}
+.auth-btn:hover{background:rgba(0,245,255,0.15);}
+.auth-divider{display:flex;align-items:center;gap:12px;margin:16px 0;}
+.auth-divider-line{flex:1;height:1px;background:var(--border);}
+.auth-divider-txt{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:0.2em;color:var(--muted);text-transform:uppercase;}
+.auth-google{width:100%;font-family:'Share Tech Mono',monospace;font-size:10px;letter-spacing:0.12em;text-transform:uppercase;padding:13px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:10px;}
+.auth-google:hover{border-color:var(--muted2);color:var(--text);}
+.auth-footer{text-align:center;margin-top:16px;font-size:12px;color:var(--muted2);}
+.auth-footer a{color:var(--purple);cursor:pointer;}
+.auth-forgot{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);text-align:right;display:block;margin-top:4px;cursor:pointer;}
+.auth-forgot:hover{color:var(--purple);}
+/* Pricing */
+.pricing-hdr{text-align:center;margin-bottom:24px;}
+.pricing-title{font-family:'Orbitron',monospace;font-weight:900;font-size:clamp(16px,5vw,22px);color:var(--text);letter-spacing:0.06em;margin-bottom:6px;}
+.pricing-sub{font-size:13px;color:var(--muted2);line-height:1.6;}
+.plan{background:var(--surface);border:1px solid var(--border);padding:20px;margin-bottom:10px;position:relative;}
+.plan::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);}
+.plan.popular{border-color:var(--purple);}
+.plan.popular::before{background:linear-gradient(90deg,transparent,var(--purple),var(--cyan),var(--purple),transparent);}
+.plan-badge{position:absolute;top:-1px;right:16px;font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:0.15em;text-transform:uppercase;padding:3px 10px;background:var(--purple);color:var(--bg);}
+.plan-name{font-family:'Orbitron',monospace;font-weight:700;font-size:14px;letter-spacing:0.1em;margin-bottom:4px;}
+.plan-free .plan-name{color:var(--muted2);}
+.plan-starter .plan-name{color:var(--purple);}
+.plan-pro .plan-name{color:var(--cyan);}
+.plan-price{display:flex;align-items:baseline;gap:4px;margin-bottom:14px;}
+.plan-val{font-family:'Orbitron',monospace;font-weight:900;font-size:28px;}
+.plan-free .plan-val{color:var(--muted2);}
+.plan-starter .plan-val{color:var(--purple);}
+.plan-pro .plan-val{color:var(--cyan);}
+.plan-period{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--muted);letter-spacing:0.1em;}
+.plan-feats{display:flex;flex-direction:column;gap:7px;margin-bottom:16px;}
+.plan-feat{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted2);}
+.plan-feat::before{content:'·';font-family:'Share Tech Mono',monospace;color:var(--muted);flex-shrink:0;}
+.plan-feat.on{color:var(--text);}
+.plan-feat.on::before{content:'✓';color:var(--cyan);}
+.plan-starter .plan-feat.on::before{color:var(--purple);}
+.plan-btn{width:100%;font-family:'Share Tech Mono',monospace;font-size:9px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;padding:13px;border:1px solid;cursor:pointer;transition:all 0.15s;}
+.plan-free .plan-btn{background:transparent;border-color:var(--border);color:var(--muted2);}
+.plan-free .plan-btn:hover{border-color:var(--muted2);color:var(--text);}
+.plan-starter .plan-btn{background:rgba(180,79,255,0.1);border-color:var(--purple);color:var(--purple);}
+.plan-pro .plan-btn{background:rgba(0,245,255,0.08);border-color:var(--cyan);color:var(--cyan);}
+.plan-note{font-family:'Share Tech Mono',monospace;font-size:7px;letter-spacing:0.1em;color:var(--muted);text-align:center;margin-top:6px;}
+.auth-back{font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);background:transparent;border:none;cursor:pointer;padding:8px 0;display:block;margin-bottom:16px;}
+.auth-back:hover{color:var(--muted2);}
+@keyframes authIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+.auth-screen{animation:authIn 0.3s ease both;}
+/* My Sims */
+.sim-card{background:var(--surface);border:1px solid var(--border);padding:16px 20px;margin-bottom:10px;cursor:pointer;transition:all 0.2s;position:relative;}
+.sim-card::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--border),transparent);}
+.sim-card:hover{border-color:var(--cyan);background:#0f0f2e;}
+.sim-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.sim-card-title{font-family:'Orbitron',monospace;font-weight:700;font-size:15px;color:#f0f0ff;line-height:1.2;flex:1;margin-right:40px;}
+.sim-card-score{font-family:'Orbitron',monospace;font-weight:900;font-size:28px;line-height:1;flex-shrink:0;}
+.sim-card-score.funded{color:var(--cyan);text-shadow:0 0 10px rgba(0,245,255,0.4);}
+.sim-card-score.drawing{color:var(--pink);text-shadow:0 0 10px rgba(255,45,120,0.4);}
+.sim-card-meta{display:flex;gap:12px;align-items:center;}
+.sim-card-verdict{font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:0.12em;text-transform:uppercase;padding:4px 10px;border:1px solid;}
+.sim-card-verdict.funded{color:var(--cyan);border-color:var(--cyan);}
+.sim-card-verdict.drawing{color:var(--pink);border-color:var(--pink);}
+.sim-card-date{font-family:'DM Sans',sans-serif;font-size:13px;color:var(--muted2);letter-spacing:0;}
+.sim-card-hypothesis{font-size:13px;color:#b0b0cc;font-style:italic;line-height:1.6;margin-top:10px;border-left:2px solid var(--border);padding-left:12px;}
+.sim-card-arrow{position:absolute;right:16px;bottom:14px;font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted2);}
+/* Hamburger Menu */
+#hamburger{position:fixed;top:16px;right:16px;z-index:997;background:var(--surface);border:1px solid var(--border);width:40px;height:40px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;}
+#hamburger:hover{border-color:var(--cyan);}
+#hamburger span{font-size:16px;color:var(--muted2);}
+#hamburger:hover span{color:var(--cyan);}
+#hmenu{position:fixed;top:64px;right:16px;z-index:997;background:var(--surface);border:1px solid var(--border);min-width:180px;display:none;flex-direction:column;animation:fadeUp 0.2s ease both;}
+#hmenu::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--cyan),var(--purple),transparent);}
+#hmenu.open{display:flex;}
+.hmenu-item{font-family:'Share Tech Mono',monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;padding:14px 18px;color:var(--muted2);cursor:pointer;border-bottom:1px solid var(--border);background:transparent;text-align:left;transition:all 0.15s;width:100%;}
+.hmenu-item:last-child{border-bottom:none;}
+.hmenu-item:hover{color:var(--text);background:rgba(255,255,255,0.03);}
+.hmenu-item.highlight{color:var(--cyan);}
+.hmenu-item.highlight:hover{background:rgba(0,245,255,0.05);}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#00f5ff">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -206,9 +414,29 @@ textarea::placeholder{color:var(--muted);font-style:italic;}
 </style>
 </head>
 <body>
+<div id="hamburger" onclick="toggleMenu()"><span>☰</span></div>
+<div id="hmenu">
+  <button class="hmenu-item" onclick="openPricing();toggleMenu()">PLANOS &amp; PREÇOS</button>
+  <button class="hmenu-item" id="hmenu-entrar" onclick="openLogin(&apos;in&apos;);toggleMenu()">ENTRAR</button>
+  <button class="hmenu-item highlight" id="hmenu-cadastrar" onclick="openLogin(&apos;up&apos;);toggleMenu()">CADASTRAR</button>
+  <button class="hmenu-item" id="hmenu-perfil" style="display:none;color:var(--muted2)" onclick="openMySims();toggleMenu()">MINHAS SIMULAÇÕES</button>
+  <button class="hmenu-item" id="hmenu-sair" style="display:none;color:var(--pink)" onclick="_logout();toggleMenu()">SAIR</button>
+</div>
+<div id="mockBanner" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:1000;background:rgba(255,45,120,0.15);border-top:1px solid var(--pink);padding:6px;text-align:center;font-family:Share Tech Mono,monospace;font-size:8px;letter-spacing:0.2em;color:var(--pink);text-transform:uppercase">
+  ⚡ MODO TESTE — API não está sendo chamada
+</div>
 <div id="installBanner">
   <button id="installBtn">📲 INSTALAR APP</button>
   <button id="installClose">✕</button>
+</div>
+<div id="pricingOverlay" style="display:none;position:fixed;inset:0;z-index:999;background:var(--bg);overflow-y:auto;padding:20px 16px 80px;">
+  <div style="position:relative;z-index:1;width:100%;max-width:480px;margin:0 auto" id="pricingWrap"></div>
+</div>
+<div id="loginOverlay" style="display:none;position:fixed;inset:0;z-index:999;background:var(--bg);overflow-y:auto;padding:20px 16px 80px;">
+  <div style="position:relative;z-index:1;width:100%;max-width:480px;margin:0 auto" id="loginWrap"></div>
+</div>
+<div id="mysimsOverlay" style="display:none;position:fixed;inset:0;z-index:999;background:var(--bg);overflow-y:auto;padding:20px 16px 80px;">
+  <div style="position:relative;z-index:1;width:100%;max-width:680px;margin:0 auto" id="mysimsWrap"></div>
 </div>
 <div id="paywallOverlay">
   <div id="paywallModal">
@@ -243,6 +471,56 @@ textarea::placeholder{color:var(--muted);font-style:italic;}
   <div id="app"></div>
 </div>
 <script>
+// ── SUPABASE ──
+var _sb = supabase.createClient('https://eqxpvwobjmefcazleeyz.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxeHB2d29iam1lZmNhemxlZXl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxOTA4NzAsImV4cCI6MjA4OTc2Njg3MH0.a1PSfJeaLOumbVih11SSoaY1-xJY-dPAg3yZrnH7vUc');
+var _user = null;
+
+_sb.auth.getSession().then(function(d) {
+  if (d.data && d.data.session) {
+    _user = d.data.session.user;
+    _updateMenuForUser();
+  }
+});
+
+_sb.auth.onAuthStateChange(function(event, session) {
+  _user = session ? session.user : null;
+  _updateMenuForUser();
+});
+
+function _updateMenuForUser() {
+  var entrar = document.getElementById('hmenu-entrar');
+  var cadastrar = document.getElementById('hmenu-cadastrar');
+  var sair = document.getElementById('hmenu-sair');
+  var perfil = document.getElementById('hmenu-perfil');
+  if (_user) {
+    if (entrar) entrar.style.display = 'none';
+    if (cadastrar) cadastrar.style.display = 'none';
+    if (sair) sair.style.display = 'block';
+    if (perfil) perfil.style.display = 'block';
+  } else {
+    if (entrar) entrar.style.display = 'block';
+    if (cadastrar) cadastrar.style.display = 'block';
+    if (sair) sair.style.display = 'none';
+    if (perfil) perfil.style.display = 'none';
+  }
+}
+
+async function _saveSimulation() {
+  if (!_user || !state.analysis) return;
+  try {
+    await _sb.from('simulations').insert({
+      user_id: _user.id,
+      spark: state.spark,
+      objective: state.objective,
+      outcome: state.outcome,
+      title: state.title,
+      score: state.analysis.score,
+      score_label: state.analysis.scoreLabel,
+      analysis: state.analysis
+    });
+  } catch(e) { console.log('Save sim error:', e); }
+}
+
 // ── STATE ──
 var lang = 'pt';
 var mode = 'idea'; // only mode
@@ -254,6 +532,36 @@ var chapNum = 0;
 var simCount = 0;
 var state = {spark:'', objective:'', outcome:'', title:'', analysis:null};
 try { simCount = parseInt(localStorage.getItem('simly_n') || '0'); } catch(e) {}
+
+// ── MOCK MODE ──
+var _mockMode = false;
+try { _mockMode = new URLSearchParams(window.location.search).get('mock') === '1'; } catch(e) {}
+
+var _mockAnalysis = {
+  score: 78,
+  scoreLabel: 'MERCADO EMERGENTE',
+  marketInsight: 'O mercado global de ferramentas de validação de ideias cresce 34% ao ano. No Brasil, 17 milhões de MEIs ativos são potenciais usuários.',
+  similarProjects: [
+    {name: 'IdeaFlip', description: 'Brainstorming colaborativo com votação. Foco em times, não validação individual.'},
+    {name: 'Strategyzer', description: 'Business Model Canvas digital. Mais complexo, sem simulação por IA.'}
+  ],
+  strengths: ['Demanda comprovada', 'Baixo custo de aquisição', 'Modelo escalável'],
+  risks: [
+    {risk: 'Dependência de API de terceiros', mitigation: 'Construir camada de abstração para troca de provedor'},
+    {risk: 'Percepção de produto fútil', mitigation: 'Cases reais de decisões tomadas com base na análise'}
+  ],
+  solutions: [
+    'Lançar versão gratuita e coletar 500 usuários antes de monetizar',
+    'Parceria com aceleradoras para oferecer como ferramenta de pré-seleção',
+    'Versão white-label para consultorias e hubs de inovação'
+  ],
+  teamNeeded: true,
+  teamRoles: ['Dev Full-Stack', 'Designer UX/UI'],
+  teamCostData: 'Estimativa de investimento em equipe: R$12k–20k/mês (freelance/PJ) ou R$18k–30k/mês (CLT).'
+};
+
+var _mockOutcome = 'Pessoas criativas pagariam para ter suas ideias avaliadas com dados reais antes de investir tempo e dinheiro.';
+var _mockTitle = 'Mercado de Ideias Vivas';
 
 // ── TRANSLATIONS ──
 var TX = {
@@ -540,7 +848,8 @@ function showIntro(a) {
   var desc = tx.introDesc;
   a.innerHTML = '<div class="intro-screen">'
     + '<div class="intro-logo">SIMLY</div>'
-    + '<div class="intro-sub">simulate before you build</div>'
+    + '<div class="intro-sub">' + (lang==='pt'?'SIMULE ANTES DE CONSTRUIR':'SIMULATE BEFORE YOU BUILD') + '</div>'
+    + '<div class="pixel-sprite-intro"><svg width="48" height="48" viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated"><rect x="5" y="0" width="2" height="1" fill="#ffff00"/><rect x="4" y="1" width="4" height="1" fill="#ffff00"/><rect x="3" y="2" width="6" height="1" fill="#00f5ff"/><rect x="2" y="3" width="8" height="1" fill="#00f5ff"/><rect x="1" y="4" width="10" height="2" fill="#00f5ff"/><rect x="2" y="6" width="8" height="1" fill="#b44fff"/><rect x="0" y="4" width="1" height="3" fill="#ff2d78"/><rect x="11" y="4" width="1" height="3" fill="#ff2d78"/><rect x="4" y="7" width="4" height="1" fill="#e8e8ff"/><rect x="5" y="8" width="1" height="3" fill="#ff6600"/><rect x="6" y="8" width="1" height="3" fill="#ff4400"/><rect x="4" y="10" width="1" height="1" fill="#ff6600"/><rect x="7" y="10" width="1" height="1" fill="#ff6600"/></svg></div>'
     + '<div class="lang-toggle">'
     + '<button class="lang-btn ' + (lang==='pt'?'active-pt':'inactive') + '" onclick="setLang(&apos;pt&apos;)">PT</button>'
     + '<button class="lang-btn ' + (lang==='en'?'active-en':'inactive') + '" onclick="setLang(&apos;en&apos;)">EN</button>'
@@ -553,7 +862,7 @@ function showIntro(a) {
     + '<div class="intro-note">&#9672; ' + tx.rpgNote + '</div>'
     + '<div class="intro-divider"></div>'
     + '<div class="intro-cta">' + tx.ctaLabel + '</div>'
-    + '<button class="btn-start" onclick="startFromIntro()">' + tx.startBtn + '</button>'
+    + '<button class="btn-start" onclick="startFromIntro()">' + (lang==='pt'?'PRESS START':'PRESS START') + '</button>'
     + '</div>';
 }
 
@@ -777,12 +1086,12 @@ async function showVerdict(a) {
     var p;
     if (isSolve()) {
       p = lang === 'pt'
-        ? 'Avalie a viabilidade desta solucao. JSON sem backticks. No campo similarProjects, inclua apenas se houver produtos ou servicos diretamente comparaveis — caso contrario retorne array vazio.\n\nProblema: ' + state.spark + '\nNecessidade: ' + state.objective + '\nSolucao: ' + state.outcome + '\nContexto: ' + marketData + '\n\nCriterios (evite 60-75):\n- 85-100: solucao clara, aplicavel, resolve o problema\n- 65-84: boa solucao com obstaculos gerenciaveis\n- 45-64: solucao parcial ou com limitacoes\n- 0-44: solucao nao resolve ou impraticavel\n\n{"score":0-100,"scoreLabel":"3-5 palavras","marketInsight":"1-2 frases sobre contexto","similarProjects":[{"name":"nome do produto","description":"o que faz e como se relaciona"}],"strengths":["s1","s2"],"risks":[{"risk":"limitacao","mitigation":"como superar"}],"solutions":["variacao 1","variacao 2","variacao 3"]}'
-        : 'Evaluate the viability of this solution. JSON no backticks. In the similarProjects field, only include entries if there are directly comparable products or services — otherwise return empty array.\n\nProblem: ' + state.spark + '\nNeed: ' + state.objective + '\nSolution: ' + state.outcome + '\nContext: ' + marketData + '\n\nCriteria (avoid 60-75):\n- 85-100: clear solution, applicable, resolves the problem\n- 65-84: good solution with manageable obstacles\n- 45-64: partial solution or with limitations\n- 0-44: does not resolve or impractical\n\n{"score":0-100,"scoreLabel":"3-5 words","marketInsight":"1-2 sentences about context","similarProjects":[{"name":"product name","description":"what it does and how it relates"}],"strengths":["s1","s2"],"risks":[{"risk":"limitation","mitigation":"how to overcome"}],"solutions":["variation 1","variation 2","variation 3"]}';
+        ? 'Avalie a viabilidade desta solucao. JSON sem backticks. No campo similarProjects, inclua apenas se houver produtos ou servicos diretamente comparaveis — caso contrario retorne array vazio.\n\nProblema: ' + state.spark + '\nNecessidade: ' + state.objective + '\nSolucao: ' + state.outcome + '\nContexto: ' + marketData + '\n\nCriterios (evite 60-75):\n- 85-100: solucao clara, aplicavel, resolve o problema\n- 65-84: boa solucao com obstaculos gerenciaveis\n- 45-64: solucao parcial ou com limitacoes\n- 0-44: solucao nao resolve ou impraticavel\n\n{"score":0-100,"scoreLabel":"3-5 palavras","marketInsight":"1-2 frases sobre contexto","similarProjects":[{"name":"nome do produto","description":"o que faz e como se relaciona"}],"strengths":["s1","s2"],"risks":[{"risk":"limitacao","mitigation":"como superar"}],"solutions":["variacao 1","variacao 2","variacao 3"],"teamNeeded":true,"teamRoles":["papel 1","papel 2"]}. Se nao precisar de equipe retorne teamNeeded:false e teamRoles:[].'
+        : 'Evaluate the viability of this solution. JSON no backticks. In the similarProjects field, only include entries if there are directly comparable products or services — otherwise return empty array.\n\nProblem: ' + state.spark + '\nNeed: ' + state.objective + '\nSolution: ' + state.outcome + '\nContext: ' + marketData + '\n\nCriteria (avoid 60-75):\n- 85-100: clear solution, applicable, resolves the problem\n- 65-84: good solution with manageable obstacles\n- 45-64: partial solution or with limitations\n- 0-44: does not resolve or impractical\n\n{"score":0-100,"scoreLabel":"3-5 words","marketInsight":"1-2 sentences about context","similarProjects":[{"name":"product name","description":"what it does and how it relates"}],"strengths":["s1","s2"],"risks":[{"risk":"limitation","mitigation":"how to overcome"}],"solutions":["variation 1","variation 2","variation 3"],"teamNeeded":true,"teamRoles":["role 1","role 2"]}. If no team needed return teamNeeded:false and teamRoles:[].';
     } else {
       p = lang === 'pt'
-        ? 'Analise o potencial desta ideia. JSON sem backticks. No campo similarProjects, inclua apenas se houver produtos ou servicos diretamente comparaveis — caso contrario retorne array vazio.\n\nSpark: ' + state.spark + '\nObjective: ' + state.objective + '\nHipotese: ' + state.outcome + '\nMercado: ' + marketData + '\n\nCriterios (evite 60-75):\n- 85-100: mercado grande e crescente, demanda comprovada\n- 65-84: mercado existe, demanda emergente\n- 45-64: mercado pequeno ou incerto\n- 0-44: mercado inexistente ou timing ruim\n\n{"score":0-100,"scoreLabel":"3-5 palavras","marketInsight":"1-2 frases com dados de mercado","similarProjects":[{"name":"nome do produto","description":"o que faz e como se relaciona"}],"strengths":["s1","s2"],"risks":[{"risk":"risco","mitigation":"mitigacao"}],"solutions":["caminho 1","caminho 2","caminho 3"]}'
-        : 'Analyze the potential of this idea. JSON no backticks. In the similarProjects field, only include entries if there are directly comparable products or services — otherwise return empty array.\n\nSpark: ' + state.spark + '\nObjective: ' + state.objective + '\nHypothesis: ' + state.outcome + '\nMarket: ' + marketData + '\n\nCriteria (avoid 60-75):\n- 85-100: large growing market, proven demand\n- 65-84: market exists, emerging demand\n- 45-64: small or uncertain market\n- 0-44: non-existent market or bad timing\n\n{"score":0-100,"scoreLabel":"3-5 words","marketInsight":"1-2 sentences with market data","similarProjects":[{"name":"product name","description":"what it does and how it relates"}],"strengths":["s1","s2"],"risks":[{"risk":"risk","mitigation":"mitigation"}],"solutions":["path 1","path 2","path 3"]}';
+        ? 'Analise o potencial desta ideia. JSON sem backticks. No campo similarProjects, inclua apenas se houver produtos ou servicos diretamente comparaveis — caso contrario retorne array vazio.\n\nSpark: ' + state.spark + '\nObjective: ' + state.objective + '\nHipotese: ' + state.outcome + '\nMercado: ' + marketData + '\n\nCriterios (evite 60-75):\n- 85-100: mercado grande e crescente, demanda comprovada\n- 65-84: mercado existe, demanda emergente\n- 45-64: mercado pequeno ou incerto\n- 0-44: mercado inexistente ou timing ruim\n\n{"score":0-100,"scoreLabel":"3-5 palavras","marketInsight":"1-2 frases com dados de mercado","similarProjects":[{"name":"nome do produto","description":"o que faz e como se relaciona"}],"strengths":["s1","s2"],"risks":[{"risk":"risco","mitigation":"mitigacao"}],"solutions":["caminho 1","caminho 2","caminho 3"],"teamNeeded":true,"teamRoles":["papel 1","papel 2"]}. Se nao precisar de equipe retorne teamNeeded:false e teamRoles:[].'
+        : 'Analyze the potential of this idea. JSON no backticks. In the similarProjects field, only include entries if there are directly comparable products or services — otherwise return empty array.\n\nSpark: ' + state.spark + '\nObjective: ' + state.objective + '\nHypothesis: ' + state.outcome + '\nMarket: ' + marketData + '\n\nCriteria (avoid 60-75):\n- 85-100: large growing market, proven demand\n- 65-84: market exists, emerging demand\n- 45-64: small or uncertain market\n- 0-44: non-existent market or bad timing\n\n{"score":0-100,"scoreLabel":"3-5 words","marketInsight":"1-2 sentences with market data","similarProjects":[{"name":"product name","description":"what it does and how it relates"}],"strengths":["s1","s2"],"risks":[{"risk":"risk","mitigation":"mitigation"}],"solutions":["path 1","path 2","path 3"],"teamNeeded":true,"teamRoles":["role 1","role 2"]}. If no team needed return teamNeeded:false and teamRoles:[].';
     }
     var an = await api(p, 600);
     // Convert categoria to score to avoid model anchoring on 72
@@ -802,7 +1111,17 @@ async function showVerdict(a) {
     } else if (!an.score || an.score === 72) {
       an.score = 55 + Math.floor(Math.random()*30);
     }
+    // Fetch team cost data if team is needed
+    if (an.teamNeeded && an.teamRoles && an.teamRoles.length) {
+      try {
+        var teamQuery = lang === 'pt'
+          ? 'Com base nos perfis necessarios para este projeto, estime o investimento mensal aproximado em equipe no Brasil em 2024-2025. Seja direto: traga apenas uma faixa geral de investimento (ex: R$8k-15k/mes) sem detalhar salarios individuais. Perfis: ' + an.teamRoles.join(', ')
+          : 'Based on the profiles needed for this project, estimate the approximate monthly team investment in Brazil for 2024-2025. Be direct: provide only a general investment range (e.g. R$8k-15k/month) without detailing individual salaries. Profiles: ' + an.teamRoles.join(', ');
+        an.teamCostData = await apiSearch(teamQuery, 300);
+      } catch(e) { an.teamCostData = null; }
+    }
     state.analysis = an;
+    _saveSimulation();
     var funded = an.score >= 65;
     try { simCount++; localStorage.setItem('simly_n', simCount); } catch(e) {}
 
@@ -838,7 +1157,7 @@ function showDashboard(a) {
     var mt = typeof r === 'object' ? r.mitigation : '';
     return '<div class="dash-item"><div class="dash-item-main">&#9888; ' + rt + '</div>' + (mt?'<div class="dash-item-sub mit">&rarr; ' + mt + '</div>':'') + '</div>';
   }).join('');
-  var sols = (an.solutions||[]).map(function(s){ return '<div class="dash-item"><div class="dash-item-sub sol">&#128161; ' + s + '</div></div>'; }).join('');
+  var sols = '';
   var vword = funded?tx.fundedWord:tx.drawingWord;
   var dhyp = tx.dhyp;
   var dmarket = tx.dmarket;
@@ -847,28 +1166,46 @@ function showDashboard(a) {
   var dpaths = tx.dpaths;
 
   if (_checkCredits()) window._paid = true;
-  a.innerHTML = '<div class="dashboard">'
-    + '<div class="dash-header">'
-    + '<div class="dash-top"><div class="dash-logo">SIMLY</div><div class="dash-score" id="dscore">0<span>pts</span></div></div>'
-    + '<div class="dash-idea">' + (state.title||'IDEIA') + '</div>'
-    + '<div class="dash-score-lbl">' + an.scoreLabel + ' &middot; ' + vword + '</div>'
-    + (an.similarProjects && an.similarProjects.length ? '<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.08)">'
-      + '<div style="font-family:Share Tech Mono,monospace;font-size:8px;letter-spacing:0.15em;text-transform:uppercase;margin-bottom:6px;color:' + (an.score>=85?'rgba(0,245,255,0.7)':an.score>=65?'rgba(180,79,255,0.7)':'rgba(255,45,120,0.7)') + '">'
-      + (an.score>=85 ? (lang==='pt'?'✓ ESTES VALIDARAM SUA IDEIA':'✓ THESE VALIDATED YOUR IDEA') : an.score>=65 ? (lang==='pt'?'→ VEJA QUEM JÁ ESTÁ NO MERCADO':'→ SEE WHO IS ALREADY IN THE MARKET') : (lang==='pt'?'⚠ JÁ EXISTE, CUIDADO':'⚠ ALREADY EXISTS, BE CAREFUL'))
+  var solsHtml = (an.solutions||[]).map(function(s, i){ return '<div class="sol-item"><div class="sol-num">0' + (i+1) + '</div><div class="sol-txt">' + s + '</div></div>'; }).join('');
+  var similarsHtml = (an.similarProjects && an.similarProjects.length)
+    ? '<div class="dash-sec"><div class="dash-sec-lbl">' + (lang==='pt'?'IDEIAS SIMILARES NO MERCADO':'SIMILAR IDEAS IN THE MARKET') + '</div>'
+      + an.similarProjects.map(function(p){ return '<div class="similar-item"><div class="similar-dot"></div><div><div class="similar-name">' + p.name + '</div><div class="similar-desc">' + p.description + '</div><div class="similar-tone">' + (an.score>=85?(lang==='pt'?'✓ ESTES VALIDARAM SUA IDEIA':'✓ THESE VALIDATED YOUR IDEA'):an.score>=65?(lang==='pt'?'→ VEJA QUEM JÁ ESTÁ NO MERCADO':'→ SEE WHO IS ALREADY IN THE MARKET'):(lang==='pt'?'⚠ JÁ EXISTE, CUIDADO':'⚠ ALREADY EXISTS, BE CAREFUL')) + '</div></div></div>'; }).join('')
       + '</div>'
-      + an.similarProjects.map(function(p){ return '<div style="font-size:11px;color:var(--muted2);margin-bottom:3px">· <strong style="color:var(--text)">' + p.name + '</strong> — ' + p.description + '</div>'; }).join('')
-      + '</div>' : '')
+    : '';
+
+  a.innerHTML = '<div class="dashboard">'
+    + '<div class="dash-verdict-banner ' + (funded?'funded':'drawing') + '"><div class="dash-verdict-word">' + vword + '</div></div>'
+    + '<div class="dash-header">'
+    + '<div class="dash-logo">SIMLY · AN\u00c1LISE</div>'
+    + '<div class="dash-idea">' + (state.title||'IDEIA') + '</div>'
+    + '<div class="dash-score-row"><div class="dash-score" id="dscore">0</div>'
+    + '<div class="dash-score-right"><div class="dash-score-lbl">' + an.scoreLabel + '</div>'
+    + '<div class="dash-score-bar-track"><div class="dash-score-bar-fill" id="dbar" style="width:0%"></div></div>'
+    + '</div></div>'
     + '</div>'
     + '<div class="dash-body">'
-    + '<div class="dash-sec"><div class="dash-sec-lbl">' + dhyp + '</div><div style="font-size:13px;color:var(--muted2);font-style:italic;line-height:1.6">"' + state.outcome + '"</div></div>'
+    + '<div class="dash-sec"><div class="dash-sec-lbl">' + dhyp + '</div><div style="font-size:15px;color:#d0d0f0;font-style:italic;line-height:1.7;border-left:3px solid var(--cyan);padding-left:14px">&ldquo;' + state.outcome + '&rdquo;</div></div>'
     + (an.marketInsight?'<div class="dash-sec"><div class="dash-sec-lbl">' + dmarket + '</div><div class="market-box">&#128269; ' + an.marketInsight + '</div></div>':'')
-    + (window._paid ? '' : '<div class="dash-blur-wrap">')
-    + (window._paid ? '' : '<div class="dash-blur">')
     + '<div class="dash-sec"><div class="dash-sec-lbl">' + dstr + '</div><div class="dash-tags">' + strs + '</div></div>'
     + '<div class="dash-sec"><div class="dash-sec-lbl">' + drisk + '</div>' + risks + '</div>'
-    + '<div class="dash-sec"><div class="dash-sec-lbl">' + dpaths + '</div>' + sols + '</div>'
-    + (window._paid ? '' : '</div>')
-    + (window._paid ? '' : '<div class="dash-unlock-btn-wrap">' + '<button class="dash-unlock-btn" onclick="openPaywall()">' + '<span style="font-size:18px">🔒</span>' + '<span style="font-size:clamp(11px,3vw,13px);letter-spacing:0.1em">' + (lang==='pt' ? 'DESBLOQUEAR AN\u00c1LISE COMPLETA' : 'UNLOCK FULL ANALYSIS') + '</span>' + '<span style="font-family:Share Tech Mono,monospace;font-size:9px;letter-spacing:0.15em;color:var(--muted2);text-transform:uppercase">' + (lang==='pt' ? 'pontos fortes · riscos · caminhos · PDF' : 'strengths · risks · paths · PDF') + '</span>' + '<span style="display:flex;align-items:baseline;gap:6px;margin-top:2px">'   + '<span style="font-family:Share Tech Mono,monospace;font-size:10px;color:var(--muted2)">' + (lang==='pt' ? '3 simulações por' : '3 simulations for') + '</span>'   + '<span style="font-size:22px;color:var(--text);letter-spacing:0">' + (lang==='pt' ? 'R$9,90' : 'R$9.90') + '</span>' + '</span>' + '</button></div></div>')
+    + '<div class="dash-sec"><div class="dash-sec-lbl">' + dpaths + '</div>' + solsHtml + '</div>'
+    + similarsHtml
+    + (an.teamNeeded && an.teamRoles && an.teamRoles.length
+      ? '<div class="dash-sec" style="background:rgba(180,79,255,0.06);border-top:1px solid rgba(180,79,255,0.2);">'
+        + '<div class="dash-sec-lbl" style="background:rgba(180,79,255,0.2);border-color:rgba(180,79,255,0.4);">' + (lang==='pt'?'TIME M\u00cdNIMO SUGERIDO':'MINIMUM TEAM SUGGESTED') + '</div>'
+        + '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">'
+        + an.teamRoles.map(function(r){ return '<div style="background:rgba(180,79,255,0.1);border:1px solid rgba(180,79,255,0.3);padding:7px 14px;font-family:Share Tech Mono,monospace;font-size:10px;letter-spacing:0.1em;color:#d8a0ff">' + r + '</div>'; }).join('')
+        + '</div>'
+        + (an.teamCostData ? '<div style="background:rgba(255,255,255,0.04);border:1px solid #3a3a7e;padding:14px;font-size:14px;color:#d0d0f0;line-height:1.7;margin-bottom:10px">' + an.teamCostData + '</div>' : '')
+        + '<div style="background:rgba(0,245,255,0.05);border:1px solid rgba(0,245,255,0.15);padding:12px 14px;font-size:13px;color:#c0c0e0;line-height:1.6;margin-bottom:10px">'
+        + (lang==='pt'?'<strong style="color:#00f5ff">Alternativa solo:</strong> ferramentas no-code + IA podem reduzir significativamente o custo inicial.'
+                      :'<strong style="color:#00f5ff">Solo alternative:</strong> no-code tools + AI can significantly reduce initial costs.')
+        + '</div>'
+        + '<div style="font-family:Share Tech Mono,monospace;font-size:9px;color:#5a5a8a;line-height:1.7;border-top:1px solid #2a2a5e;padding-top:10px">'
+        + (lang==='pt'?'⚠ Estimativas baseadas em dados de mercado brasileiro. Valores variam conforme experiência, região e modelo de contratação.':'⚠ Estimates based on Brazilian market data. Values vary by experience, region and contract model.')
+        + '</div>'
+        + '</div>'
+      : '')
     + '</div>'
     + '<div class="disclaimer"><p>' + tx.disclaimer + '</p></div>'
     + (window._paid
@@ -890,6 +1227,7 @@ function showDashboard(a) {
     + '<div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px">'
     + '<button class="btn btn-ghost" onclick="replayRPG()">&#8635; ' + tx.replay + '</button>'
     + '<button class="btn btn-ghost" onclick="resetAll()">&#8635; ' + tx.newSim + '</button>'
+    + (_user ? '<button class="btn btn-ghost" onclick="openMySims()">&#9776; ' + (lang==='pt' ? 'MINHAS SIMULA\u00c7\u00d5ES' : 'MY SIMULATIONS') + '</button>' : '')
     + '</div>'
     + '<div class="dash-footer">' + tx.footer + '</div>'
     + '</div>';
@@ -898,9 +1236,15 @@ function showDashboard(a) {
   var iv = setInterval(function(){
     n = Math.min(n+2, target);
     var el = document.getElementById('dscore');
-    if (el) el.innerHTML = n + '<span>pts</span>';
+    var bar = document.getElementById('dbar');
+    if (el) el.innerHTML = n;
+    if (bar) bar.style.width = n + '%';
     if (n >= target) clearInterval(iv);
   }, 18);
+
+  // Update risks with new styled items
+  var riskEls = a.querySelectorAll('.dash-item');
+  // Already rendered correctly via risks var above
 }
 
 // ── SHARE ──
@@ -977,6 +1321,28 @@ function exportPDF() {
 
 // ── API ──
 async function api(prompt, maxTokens) {
+  if (_mockMode) {
+    await new Promise(function(r){ setTimeout(r, 900); });
+    // Hypothesis generation
+    if (prompt.indexOf('hipotese') > -1 || prompt.indexOf('hypothesis') > -1 || prompt.indexOf('Hipotese') > -1 || prompt.indexOf('Hypothesis') > -1) {
+      var spark = state.spark || 'sua ideia';
+      var obj = state.objective || 'gerar valor';
+      var hyp = lang === 'pt'
+        ? spark.charAt(0).toUpperCase() + spark.slice(1) + ' pode resolver uma necessidade real — se houver um caminho claro entre a ideia e quem precisa dela.'
+        : spark.charAt(0).toUpperCase() + spark.slice(1) + ' could solve a real need — if there is a clear path between the idea and who needs it.';
+      var title = spark.split(' ').slice(0,4).map(function(w){ return w.charAt(0).toUpperCase()+w.slice(1); }).join(' ');
+      return {outcome: hyp, title: title};
+    }
+    // Score analysis — use spark in mock data
+    var mockScore = 55 + Math.floor(Math.random()*35);
+    return Object.assign({}, _mockAnalysis, {
+      score: mockScore,
+      scoreLabel: mockScore >= 85 ? (lang==='pt'?'EXCEPCIONAL':'EXCEPTIONAL') : mockScore >= 65 ? (lang==='pt'?'MERCADO EMERGENTE':'EMERGING MARKET') : (lang==='pt'?'MERCADO INCERTO':'UNCERTAIN MARKET'),
+      marketInsight: lang==='pt'
+        ? 'O segmento relacionado a "' + (state.spark||'sua ideia').substring(0,40) + '" apresenta crescimento consistente. Demanda identificada entre empreendedores e profissionais em transição.'
+        : 'The segment related to "' + (state.spark||'your idea').substring(0,40) + '" shows consistent growth. Demand identified among entrepreneurs and professionals in transition.'
+    });
+  }
   var res = await fetch('/.netlify/functions/ai', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
@@ -990,6 +1356,10 @@ async function api(prompt, maxTokens) {
 }
 
 async function apiSearch(prompt, maxTokens) {
+  if (_mockMode) {
+    await new Promise(function(r){ setTimeout(r, 600); });
+    return 'Mercado global de R$2bi crescendo 34% ao ano. Brasil com 17M de MEIs ativos.';
+  }
   var res = await fetch('/.netlify/functions/ai-search', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
@@ -1031,6 +1401,331 @@ var pdfDiv = document.createElement('div');
 pdfDiv.id = 'pdfDiv';
 pdfDiv.style.display = 'none';
 document.body.appendChild(pdfDiv);
+
+// ── AUTH (DUMMY) ──
+var _authPhase = 'login'; // login | pricing | done
+try {
+  if (sessionStorage.getItem('simly_auth') === '1') _authPhase = 'done';
+} catch(e) {}
+
+function _showAuth() {
+  var overlay = document.getElementById('authOverlay');
+  var wrap = document.getElementById('authWrap');
+  if (!overlay || !wrap) return;
+  if (_authPhase === 'done') { overlay.style.display = 'none'; return; }
+  overlay.style.display = 'flex';
+  if (_authPhase === 'login') _renderLogin(wrap);
+  else if (_authPhase === 'pricing') _renderPricing(wrap);
+}
+
+function _renderLogin(wrap) {
+  wrap.innerHTML = ''
+    + '<div class="auth-logo">SIMLY</div>'
+    + '<div class="auth-sub">simulate before you build</div>'
+    + '<div class="auth-card">'
+    + '<div class="auth-card-body">'
+    + '<div class="auth-tabs">'
+    + '<div class="auth-tab active" id="tab-in" onclick="_switchTab(&apos;in&apos;)">ENTRAR</div>'
+    + '<div class="auth-tab" id="tab-up" onclick="_switchTab(&apos;up&apos;)">CRIAR CONTA</div>'
+    + '</div>'
+    + '<div id="auth-form-in">'
+    + '<div class="auth-field"><label class="auth-lbl">Email</label><input class="auth-input" type="email" placeholder="seu@email.com"></div>'
+    + '<div class="auth-field"><label class="auth-lbl">Senha</label><input class="auth-input" type="password" placeholder="••••••••"><span class="auth-forgot">Esqueci minha senha</span></div>'
+    + '<button class="auth-btn" onclick="_goToPricing()">ENTRAR</button>'
+    + '</div>'
+    + '<div id="auth-form-up" style="display:none">'
+    + '<div class="auth-field"><label class="auth-lbl">Nome</label><input class="auth-input" type="text" placeholder="Seu nome"></div>'
+    + '<div class="auth-field"><label class="auth-lbl">Email</label><input class="auth-input" type="email" placeholder="seu@email.com"></div>'
+    + '<div class="auth-field"><label class="auth-lbl">Senha</label><input class="auth-input" type="password" placeholder="Mínimo 8 caracteres"></div>'
+    + '<button class="auth-btn" onclick="_goToPricing()">CRIAR CONTA GRÁTIS</button>'
+    + '</div>'
+    + '<div class="auth-divider"><div class="auth-divider-line"></div><div class="auth-divider-txt">ou</div><div class="auth-divider-line"></div></div>'
+    + '<button class="auth-google" onclick="_goToPricing()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>CONTINUAR COM GOOGLE</button>'
+    + '<div class="auth-footer">Não tem conta? <a onclick="_switchTab(&apos;up&apos;)">Criar agora</a></div>'
+    + '</div></div>';
+}
+
+function _switchTab(t) {
+  document.getElementById('auth-form-in').style.display = t==='in'?'block':'none';
+  document.getElementById('auth-form-up').style.display = t==='up'?'block':'none';
+  document.getElementById('tab-in').classList.toggle('active', t==='in');
+  document.getElementById('tab-up').classList.toggle('active', t==='up');
+}
+
+function _renderPricing(wrap) {
+  wrap.innerHTML = ''
+    + '<div class="auth-logo">SIMLY</div>'
+    + '<div class="auth-sub">simulate before you build</div>'
+    + '<button class="auth-back" onclick="_authPhase=&apos;login&apos;;_showAuth()">&lt; VOLTAR</button>'
+    + '<div class="pricing-hdr"><div class="pricing-title">ESCOLHA SEU PLANO</div><p class="pricing-sub">Simule suas ideias antes de investir tempo ou dinheiro.</p></div>'
+    + '<div class="plan plan-free">'
+    + '<div class="plan-name">FREE</div>'
+    + '<div class="plan-price"><span class="plan-val">R$0</span><span class="plan-period">/ sempre</span></div>'
+    + '<div class="plan-feats">'
+    + '<div class="plan-feat on">3 simulações por mês</div>'
+    + '<div class="plan-feat on">Score de viabilidade</div>'
+    + '<div class="plan-feat on">Veredicto APROVADA / DE VOLTA AO INÍCIO</div>'
+    + '<div class="plan-feat">Análise completa</div>'
+    + '<div class="plan-feat">Histórico de simulações</div>'
+    + '<div class="plan-feat">Exportar PDF</div>'
+    + '</div>'
+    + '<button class="plan-btn" onclick="_enterApp()">COMEÇAR GRÁTIS</button>'
+    + '</div>'
+    + '<div class="plan plan-starter popular">'
+    + '<div class="plan-badge">POPULAR</div>'
+    + '<div class="plan-name">STARTER</div>'
+    + '<div class="plan-price"><span class="plan-val">R$19</span><span class="plan-period">/ mês</span></div>'
+    + '<div class="plan-feats">'
+    + '<div class="plan-feat on">10 simulações por mês</div>'
+    + '<div class="plan-feat on">Análise completa desbloqueada</div>'
+    + '<div class="plan-feat on">Pontos fortes, riscos e caminhos</div>'
+    + '<div class="plan-feat on">Exportar PDF</div>'
+    + '<div class="plan-feat on">Histórico de simulações</div>'
+    + '<div class="plan-feat">Simulação RPG ilimitada</div>'
+    + '</div>'
+    + '<button class="plan-btn" onclick="_enterApp()">ASSINAR STARTER</button>'
+    + '<div class="plan-note">~R$1,90 por simulação</div>'
+    + '</div>'
+    + '<div class="plan plan-pro">'
+    + '<div class="plan-name">PRO</div>'
+    + '<div class="plan-price"><span class="plan-val">R$49</span><span class="plan-period">/ mês</span></div>'
+    + '<div class="plan-feats">'
+    + '<div class="plan-feat on">Simulações ilimitadas</div>'
+    + '<div class="plan-feat on">Tudo do Starter</div>'
+    + '<div class="plan-feat on">Simulação RPG ilimitada</div>'
+    + '<div class="plan-feat on">Análise de mercado com web search</div>'
+    + '<div class="plan-feat on">Ideias similares no mercado</div>'
+    + '<div class="plan-feat on">Histórico completo</div>'
+    + '</div>'
+    + '<button class="plan-btn" onclick="_enterApp()">ASSINAR PRO</button>'
+    + '<div class="plan-note">Ideal para quem simula toda semana</div>'
+    + '</div>';
+}
+
+function _goToPricing() {
+  _enterApp();
+}
+
+function _enterApp() {
+  _authPhase = 'done';
+  try { sessionStorage.setItem('simly_auth', '1'); } catch(e) {}
+  var overlay = document.getElementById('authOverlay');
+  overlay.style.opacity = '0';
+  overlay.style.transition = 'opacity 0.3s';
+  setTimeout(function(){ overlay.style.display = 'none'; }, 300);
+}
+
+function toggleMenu() {
+  var m = document.getElementById('hmenu');
+  m.classList.toggle('open');
+}
+// Close menu when clicking outside
+document.addEventListener('click', function(e) {
+  var m = document.getElementById('hmenu');
+  var h = document.getElementById('hamburger');
+  if (m && h && !m.contains(e.target) && !h.contains(e.target)) {
+    m.classList.remove('open');
+  }
+});
+
+function openPricing() {
+  var overlay = document.getElementById('pricingOverlay');
+  var wrap = document.getElementById('pricingWrap');
+  wrap.innerHTML = ''
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">'
+    + '<div style="font-family:Orbitron,monospace;font-size:18px;font-weight:900;color:var(--cyan);letter-spacing:0.1em">PLANOS</div>'
+    + '<button onclick="closePricing()" style="font-family:Share Tech Mono,monospace;font-size:18px;color:var(--muted);background:transparent;border:none;cursor:pointer;padding:4px 8px">✕</button>'
+    + '</div>'
+    + '<p style="font-size:13px;color:var(--muted2);margin-bottom:20px;line-height:1.6">Simule suas ideias antes de investir tempo ou dinheiro.</p>'
+    + '<div class="plan plan-free"><div class="plan-name">FREE</div><div class="plan-price"><span class="plan-val">R$0</span><span class="plan-period">/ sempre</span></div><div class="plan-feats"><div class="plan-feat on">2 simulações para experimentar</div><div class="plan-feat on">Experiência completa</div><div class="plan-feat on">Score, análise, riscos e PDF</div></div><button class="plan-btn" onclick="closePricing()">PLANO ATUAL</button></div>'
+    + '<div class="plan plan-starter popular"><div class="plan-badge">POPULAR</div><div class="plan-name">PACK STARTER</div><div class="plan-price"><span class="plan-val">R$9,90</span><span class="plan-period">/ pack</span></div><div class="plan-feats"><div class="plan-feat on">5 simulações completas</div><div class="plan-feat on">Experiência completa</div><div class="plan-feat on">Score, análise, riscos e PDF</div><div class="plan-feat on">Créditos sem prazo de validade</div></div><button class="plan-btn" onclick="closePricing()">EM BREVE</button><div class="plan-note">~R$1,98 por simulação</div></div>'
+    + '<div class="plan plan-pro"><div class="plan-name">PACK PRO</div><div class="plan-price"><span class="plan-val">R$24,90</span><span class="plan-period">/ pack</span></div><div class="plan-feats"><div class="plan-feat on">15 simulações completas</div><div class="plan-feat on">Experiência completa</div><div class="plan-feat on">Score, análise, riscos e PDF</div><div class="plan-feat on">Créditos sem prazo de validade</div></div><button class="plan-btn" onclick="closePricing()">EM BREVE</button><div class="plan-note">~R$1,66 por simulação</div></div>';
+  overlay.style.display = 'block';
+  overlay.scrollTop = 0;
+}
+
+function closePricing() {
+  document.getElementById('pricingOverlay').style.display = 'none';
+}
+
+function openLogin(tab) {
+  var overlay = document.getElementById('loginOverlay');
+  var wrap = document.getElementById('loginWrap');
+  var t = tab || 'in';
+  wrap.innerHTML = ''
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">'
+    + '<div style="font-family:Orbitron,monospace;font-size:18px;font-weight:900;color:var(--cyan);letter-spacing:0.1em">' + (t==='up'?'CADASTRAR':'ENTRAR') + '</div>'
+    + '<button onclick="closeLogin()" style="font-family:Share Tech Mono,monospace;font-size:18px;color:var(--muted);background:transparent;border:none;cursor:pointer;padding:4px 8px">✕</button>'
+    + '</div>'
+    + '<div class="auth-card"><div class="auth-card-body">'
+    + '<div class="auth-tabs">'
+    + '<div class="auth-tab ' + (t==='in'?'active':'') + '" onclick="openLogin(&apos;in&apos;)">ENTRAR</div>'
+    + '<div class="auth-tab ' + (t==='up'?'active':'') + '" onclick="openLogin(&apos;up&apos;)">CRIAR CONTA</div>'
+    + '</div>'
+    + '<div id="auth-msg" style="display:none;font-family:Share Tech Mono,monospace;font-size:10px;padding:10px;margin-bottom:10px;text-align:center;letter-spacing:0.1em"></div>'
+    + '<div class="auth-field"><label class="auth-lbl">Email</label><input class="auth-input" id="auth-email" type="email" placeholder="seu@email.com"></div>'
+    + '<div class="auth-field"><label class="auth-lbl">Senha</label><input class="auth-input" id="auth-pass" type="password" placeholder="' + (t==='up'?'Mínimo 6 caracteres':'••••••••') + '"></div>'
+    + '<button class="auth-btn" onclick="' + (t==='in'?'_doLogin()':'_doSignup()') + '">' + (t==='in'?'ENTRAR':'CRIAR CONTA GRÁTIS') + '</button>'
+    + '<div class="auth-footer">' + (t==='in'?'Não tem conta? <a onclick="openLogin(&apos;up&apos;)">Criar agora</a>':'Já tem conta? <a onclick="openLogin(&apos;in&apos;)">Entrar</a>') + '</div>'
+    + '</div></div>';
+  overlay.style.display = 'block';
+  overlay.scrollTop = 0;
+}
+
+function closeLogin() {
+  document.getElementById('loginOverlay').style.display = 'none';
+}
+
+function _showAuthMsg(msg, color) {
+  var el = document.getElementById('auth-msg');
+  if (!el) return;
+  el.style.display = 'block';
+  el.style.color = color || 'var(--cyan)';
+  el.style.background = color === 'var(--pink)' ? 'rgba(255,45,120,0.1)' : 'rgba(0,245,255,0.08)';
+  el.style.border = '1px solid ' + (color || 'var(--cyan)');
+  el.textContent = msg;
+}
+
+async function _doLogin() {
+  var email = document.getElementById('auth-email');
+  var pass = document.getElementById('auth-pass');
+  if (!email || !pass) return;
+  _showAuthMsg('ENTRANDO...', 'var(--purple)');
+  var r = await _sb.auth.signInWithPassword({email: email.value, password: pass.value});
+  if (r.error) {
+    _showAuthMsg('ERRO: ' + (r.error.message || 'verifique seus dados'), 'var(--pink)');
+  } else {
+    _user = r.data.user;
+    closeLogin();
+    _updateMenuForUser();
+  }
+}
+
+async function _doSignup() {
+  var email = document.getElementById('auth-email');
+  var pass = document.getElementById('auth-pass');
+  if (!email || !pass) return;
+  _showAuthMsg('CRIANDO CONTA...', 'var(--purple)');
+  var r = await _sb.auth.signUp({email: email.value, password: pass.value});
+  if (r.error) {
+    _showAuthMsg('ERRO: ' + (r.error.message || 'tente novamente'), 'var(--pink)');
+  } else {
+    _showAuthMsg('✓ CONTA CRIADA COM SUCESSO! Bem-vindo ao Simly.', 'var(--cyan)');
+    _user = r.data.user;
+    _updateMenuForUser();
+    setTimeout(closeLogin, 5000);
+  }
+}
+
+async function _logout() {
+  await _sb.auth.signOut();
+  _user = null;
+  _updateMenuForUser();
+}
+
+async function openMySims() {
+  if (!_user) { openLogin('in'); return; }
+  var overlay = document.getElementById('mysimsOverlay');
+  var wrap = document.getElementById('mysimsWrap');
+  overlay.style.display = 'block';
+  overlay.scrollTop = 0;
+
+  wrap.innerHTML = '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">'
+    + '<div style="font-family:Orbitron,monospace;font-size:18px;font-weight:900;color:var(--cyan);letter-spacing:0.1em">MINHAS SIMULAÇÕES</div>'
+    + '<button onclick="closeMySims()" style="font-family:Share Tech Mono,monospace;font-size:18px;color:var(--muted);background:transparent;border:none;cursor:pointer;padding:4px 8px">✕</button>'
+    + '</div>'
+    + '<div id="sims-list"><div style="font-family:Share Tech Mono,monospace;font-size:10px;color:var(--muted);text-align:center;padding:40px 0;letter-spacing:0.2em">CARREGANDO...</div></div>';
+
+  try {
+    var r = await _sb.from('simulations')
+      .select('id,title,outcome,score,score_label,analysis,created_at')
+      .eq('user_id', _user.id)
+      .order('created_at', {ascending: false});
+
+    var list = document.getElementById('sims-list');
+    if (!r.data || r.data.length === 0) {
+      list.innerHTML = '<div style="font-family:Share Tech Mono,monospace;font-size:10px;color:var(--muted);text-align:center;padding:40px 0;letter-spacing:0.15em">NENHUMA SIMULAÇÃO AINDA.<br><br>COMECE UMA AGORA!</div>';
+      return;
+    }
+    window._simsCache = r.data;
+    list.innerHTML = r.data.map(function(s, idx) {
+      var funded = s.score >= 65;
+      var _d = new Date(s.created_at);
+      var _now = new Date();
+      var _diff = Math.floor((_now - _d) / 86400000);
+      var date;
+      if (_diff === 0) date = lang==='pt' ? 'Hoje, ' + _d.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}) : 'Today, ' + _d.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
+      else if (_diff === 1) date = lang==='pt' ? 'Ontem, ' + _d.toLocaleTimeString('pt-BR', {hour:'2-digit',minute:'2-digit'}) : 'Yesterday';
+      else date = _d.toLocaleDateString(lang==='pt'?'pt-BR':'en-US', {day:'2-digit',month:'short',year:'numeric'});
+      var verdict = funded ? 'APROVADA' : 'DE VOLTA AO INÍCIO';
+      var hyp = s.outcome ? (s.outcome.length > 100 ? s.outcome.substring(0,100) + '...' : s.outcome) : '';
+      return '<div class="sim-card" onclick="_openSimDetail(' + idx + ')">'
+        + '<div class="sim-card-top">'
+        + '<div class="sim-card-title">' + (s.title || 'SIMULAÇÃO') + '</div>'
+        + '<div class="sim-card-score ' + (funded?'funded':'drawing') + '">' + s.score + '</div>'
+        + '</div>'
+        + '<div class="sim-card-meta">'
+        + '<div class="sim-card-verdict ' + (funded?'funded':'drawing') + '">' + verdict + '</div>'
+        + '<div class="sim-card-date">' + date + '</div>'
+        + '</div>'
+        + (hyp ? '<div class="sim-card-hypothesis">&ldquo;' + hyp + '&rdquo;</div>' : '')
+        + '<div class="sim-card-arrow">VER ANÁLISE →</div>'
+        + '<button onclick="event.stopPropagation();_confirmDelete(&apos;' + s.id + '&apos;)" style="position:absolute;top:12px;right:12px;font-family:var(--px);font-size:6px;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);background:var(--surface2);border:1px solid var(--border);padding:6px 8px;cursor:pointer;">✕ DEL</button>'
+        + '</div>';
+    }).join('');
+  } catch(e) {
+    document.getElementById('sims-list').innerHTML = '<div style="color:var(--pink);font-family:Share Tech Mono,monospace;font-size:10px;text-align:center;padding:20px">ERRO AO CARREGAR SIMULAÇÕES</div>';
+  }
+}
+
+function closeMySims() {
+  document.getElementById('mysimsOverlay').style.display = 'none';
+}
+
+function _confirmDelete(id) {
+  window._deleteId = id;
+  var wrap = document.getElementById('mysimsWrap');
+  var modal = document.createElement('div');
+  modal.id = 'deleteModal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(7,7,20,0.9);display:flex;align-items:center;justify-content:center;padding:20px';
+  modal.innerHTML = '<div style="background:var(--surface);border:2px solid var(--pink);padding:24px;max-width:320px;width:100%;text-align:center">'
+    + '<div style="font-family:var(--px);font-size:9px;color:var(--pink);margin-bottom:16px;line-height:1.8">DELETAR SIMULAÇÃO?<br><span style=\'font-size:7px;color:var(--muted2)\'>Esta ação não pode ser desfeita.</span></div>'
+    + '<div style="display:flex;gap:10px">'
+    + '<button onclick="_cancelDelete()" style="flex:1;font-family:var(--px);font-size:8px;padding:12px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;">CANCELAR</button>'
+    + '<button onclick="_doDelete()" style="flex:1;font-family:var(--px);font-size:8px;padding:12px;background:rgba(255,45,120,0.15);border:1px solid var(--pink);color:var(--pink);cursor:pointer;">DELETAR</button>'
+    + '</div></div>';
+  document.body.appendChild(modal);
+}
+
+function _cancelDelete() {
+  var m = document.getElementById('deleteModal');
+  if (m) m.remove();
+}
+
+async function _doDelete() {
+  var id = window._deleteId;
+  _cancelDelete();
+  if (!id) return;
+  await _sb.from('simulations').delete().eq('id', id);
+  openMySims();
+}
+
+async function _deleteSim(id) {
+  _confirmDelete(id);
+}
+
+function _openSimDetail(idx) {
+  var s = window._simsCache && window._simsCache[idx];
+  if (!s) return;
+  state.analysis = typeof s.analysis === 'string' ? JSON.parse(s.analysis) : s.analysis;
+  state.outcome = s.outcome || '';
+  state.title = s.title || '';
+  state.spark = s.spark || '';
+  state.objective = s.objective || '';
+  closeMySims();
+  phase = 'dashboard';
+  render();
+}
 
 // ── PAYWALL ──
 var STRIPE_LINK = 'https://buy.stripe.com/dRm00c3Sw2HUc2u9CKabK00';
@@ -1094,6 +1789,8 @@ function goToPayment() {
 }
 
 render();
+_showAuth();
+if (_mockMode) { var mb = document.getElementById('mockBanner'); if (mb) mb.style.display = 'block'; }
 
 // ── PWA INSTALL BANNER ──
 var _deferredPrompt = null;
