@@ -1029,27 +1029,6 @@ function _discardSim() {
   resetAll();
 }
 
-function _showToast(msg, color) {
-  var existing = document.getElementById('simToast');
-  if (existing) existing.remove();
-  var toast = document.createElement('div');
-  toast.id = 'simToast';
-  toast.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:2000;background:var(--surface);border:1px solid ' + (color||'var(--cyan)') + ';padding:12px 20px;font-family:var(--px);font-size:7px;color:' + (color||'var(--cyan)') + ';letter-spacing:0.1em;white-space:nowrap;box-shadow:0 0 20px rgba(0,0,0,0.5);animation:fadeUp 0.2s ease both;';
-  toast.textContent = msg;
-  document.body.appendChild(toast);
-  setTimeout(function(){ toast.style.opacity='0'; toast.style.transition='opacity 0.3s'; setTimeout(function(){ toast.remove(); }, 300); }, 3000);
-}
-
-async function _saveSim() {
-  if (!_user || !state.analysis) return;
-  try {
-    await _saveSimulation();
-    _showToast('✓ ' + (lang==='pt'?'SIMULAÇÃO SALVA':'SIMULATION SAVED'), 'var(--cyan)');
-  } catch(e) {
-    _showToast('✕ ' + (lang==='pt'?'ERRO AO SALVAR':'SAVE ERROR'), 'var(--pink)');
-  }
-}
-
 function _setUserPlan(limit) {
   window._userSimLimit = limit;
   _updateStreakDisplay();
@@ -1446,6 +1425,9 @@ function showDashboard(a) {
         + '<button class="btn btn-cyan" style="flex:2" onclick="_saveSim()">&#128190; ' + (lang==='pt'?'SALVAR':'SAVE') + '</button>'
         + '</div>'
         + '<button class="btn btn-ghost" style="width:100%" onclick="exportPDF()"><span style="font-size:14px">&#128196;</span> PDF</button>'
+      ? '<div style="padding:12px 20px;display:flex;gap:10px;border-top:1px solid var(--border)">'
+        + '<button class="btn btn-ghost" style="flex:1" onclick="_discardSim()">✕ ' + (lang==='pt'?'DESCARTAR':'DISCARD') + '</button>'
+        + '<button class="btn btn-cyan" style="flex:2" onclick="exportPDF()"><span style="font-size:14px">&#128196;</span> PDF</button>'
         + '</div>'
       : '<div style="padding:12px 20px;border-top:1px solid var(--border)">'
         + '<button onclick="openPricing()" style="width:100%;font-family:var(--px);font-size:8px;padding:14px;background:rgba(180,79,255,0.08);border:2px solid var(--purple);color:var(--purple);cursor:pointer;letter-spacing:0.08em;line-height:1.8">'
@@ -1776,6 +1758,8 @@ function openPricing() {
     + '<div class="plan plan-free"><div class="plan-name">FREE</div><div class="plan-price"><span class="plan-val">R$0</span><span class="plan-period">/ sempre</span></div><div class="plan-feats"><div class="plan-feat on">2 simulações para experimentar</div><div class="plan-feat on">Experiência completa</div><div class="plan-feat on">Score, análise, riscos e PDF</div></div><button class="plan-btn" onclick="closePricing()">PLANO ATUAL</button></div>'
     + '<div class="plan plan-starter popular"><div class="plan-badge">POPULAR</div><div class="plan-name">PACK STARTER</div><div class="plan-price"><span class="plan-val">R$9,90</span><span class="plan-period">/ pack</span></div><div class="plan-feats"><div class="plan-feat on">5 simulações completas</div><div class="plan-feat on">Experiência completa</div><div class="plan-feat on">Score, análise, riscos e PDF</div><div class="plan-feat on">Créditos sem prazo de validade</div></div><button class="plan-btn" onclick="_setUserPlan(5);closePricing();_openStripe(&apos;https://buy.stripe.com/cNi00ccp2eqCgiKg18abK01&apos;);">COMPRAR STARTER</button><div class="plan-note">~R$1,98 por simulação</div></div>'
     + '<div class="plan plan-pro"><div class="plan-name">PACK PRO</div><div class="plan-price"><span class="plan-val">R$24,90</span><span class="plan-period">/ pack</span></div><div class="plan-feats"><div class="plan-feat on">15 simulações completas</div><div class="plan-feat on">Experiência completa</div><div class="plan-feat on">Score, análise, riscos e PDF</div><div class="plan-feat on">Créditos sem prazo de validade</div></div><button class="plan-btn" onclick="_setUserPlan(15);closePricing();_openStripe(&apos;https://buy.stripe.com/5kQ9AM60EgyK6IacOWabK02&apos;);">COMPRAR PRO</button><div class="plan-note">~R$1,66 por simulação</div></div>';
+    + '<div class="plan plan-starter popular"><div class="plan-badge">POPULAR</div><div class="plan-name">PACK STARTER</div><div class="plan-price"><span class="plan-val">R$9,90</span><span class="plan-period">/ pack</span></div><div class="plan-feats"><div class="plan-feat on">5 simulações completas</div><div class="plan-feat on">Experiência completa</div><div class="plan-feat on">Score, análise, riscos e PDF</div><div class="plan-feat on">Créditos sem prazo de validade</div></div><button class="plan-btn" onclick="_setUserPlan(5);closePricing();">TESTAR PACK STARTER</button><div class="plan-note">~R$1,98 por simulação</div></div>'
+    + '<div class="plan plan-pro"><div class="plan-name">PACK PRO</div><div class="plan-price"><span class="plan-val">R$24,90</span><span class="plan-period">/ pack</span></div><div class="plan-feats"><div class="plan-feat on">15 simulações completas</div><div class="plan-feat on">Experiência completa</div><div class="plan-feat on">Score, análise, riscos e PDF</div><div class="plan-feat on">Créditos sem prazo de validade</div></div><button class="plan-btn" onclick="_setUserPlan(15);closePricing();">TESTAR PACK PRO</button><div class="plan-note">~R$1,66 por simulação</div></div>';
   overlay.style.display = 'block';
   overlay.scrollTop = 0;
 }
