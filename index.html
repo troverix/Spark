@@ -291,6 +291,7 @@ textarea::placeholder{color:var(--muted);font-style:italic;}
 .hmenu-item.highlight{color:var(--cyan);}
 .hmenu-item.highlight:hover{background:rgba(0,245,255,0.05);}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#00f5ff">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -309,8 +310,10 @@ textarea::placeholder{color:var(--muted);font-style:italic;}
 <div id="hamburger" onclick="toggleMenu()"><span>☰</span></div>
 <div id="hmenu">
   <button class="hmenu-item" onclick="openPricing();toggleMenu()">PLANOS &amp; PREÇOS</button>
-  <button class="hmenu-item" onclick="openLogin('in');toggleMenu()">ENTRAR</button>
-  <button class="hmenu-item highlight" onclick="openLogin('up');toggleMenu()">CADASTRAR</button>
+  <button class="hmenu-item" id="hmenu-entrar" onclick="openLogin(&apos;in&apos;);toggleMenu()">ENTRAR</button>
+  <button class="hmenu-item highlight" id="hmenu-cadastrar" onclick="openLogin(&apos;up&apos;);toggleMenu()">CADASTRAR</button>
+  <button class="hmenu-item" id="hmenu-perfil" style="display:none;color:var(--muted2)" onclick="openMySims();toggleMenu()">MINHAS SIMULAÇÕES</button>
+  <button class="hmenu-item" id="hmenu-sair" style="display:none;color:var(--pink)" onclick="_logout();toggleMenu()">SAIR</button>
 </div>
 <div id="installBanner">
   <button id="installBtn">📲 INSTALAR APP</button>
@@ -355,6 +358,56 @@ textarea::placeholder{color:var(--muted);font-style:italic;}
   <div id="app"></div>
 </div>
 <script>
+// ── SUPABASE ──
+var _sb = supabase.createClient('https://eqxpvwobjmefcazleeyz.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVxeHB2d29iam1lZmNhemxlZXl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQxOTA4NzAsImV4cCI6MjA4OTc2Njg3MH0.a1PSfJeaLOumbVih11SSoaY1-xJY-dPAg3yZrnH7vUc');
+var _user = null;
+
+_sb.auth.getSession().then(function(d) {
+  if (d.data && d.data.session) {
+    _user = d.data.session.user;
+    _updateMenuForUser();
+  }
+});
+
+_sb.auth.onAuthStateChange(function(event, session) {
+  _user = session ? session.user : null;
+  _updateMenuForUser();
+});
+
+function _updateMenuForUser() {
+  var entrar = document.getElementById('hmenu-entrar');
+  var cadastrar = document.getElementById('hmenu-cadastrar');
+  var sair = document.getElementById('hmenu-sair');
+  var perfil = document.getElementById('hmenu-perfil');
+  if (_user) {
+    if (entrar) entrar.style.display = 'none';
+    if (cadastrar) cadastrar.style.display = 'none';
+    if (sair) sair.style.display = 'block';
+    if (perfil) perfil.style.display = 'block';
+  } else {
+    if (entrar) entrar.style.display = 'block';
+    if (cadastrar) cadastrar.style.display = 'block';
+    if (sair) sair.style.display = 'none';
+    if (perfil) perfil.style.display = 'none';
+  }
+}
+
+async function _saveSimulation() {
+  if (!_user || !state.analysis) return;
+  try {
+    await _sb.from('simulations').insert({
+      user_id: _user.id,
+      spark: state.spark,
+      objective: state.objective,
+      outcome: state.outcome,
+      title: state.title,
+      score: state.analysis.score,
+      score_label: state.analysis.scoreLabel,
+      analysis: state.analysis
+    });
+  } catch(e) { console.log('Save sim error:', e); }
+}
+
 // ── STATE ──
 var lang = 'pt';
 var mode = 'idea'; // only mode
@@ -918,12 +971,13 @@ async function showVerdict(a) {
     if (an.teamNeeded && an.teamRoles && an.teamRoles.length) {
       try {
         var teamQuery = lang === 'pt'
-          ? 'Pesquise valores de mercado no Brasil em 2024-2025 para contratar os seguintes perfis profissionais como freelancer/PJ e CLT. Retorne apenas texto curto com faixas de salario em reais por mes. Perfis: ' + an.teamRoles.join(', ')
-          : 'Research 2024-2025 market rates in Brazil for hiring these profiles as freelancer and CLT. Return short text with monthly salary ranges in BRL. Profiles: ' + an.teamRoles.join(', ');
+          ? 'Com base nos perfis necessarios para este projeto, estime o investimento mensal aproximado em equipe no Brasil em 2024-2025. Seja direto: traga apenas uma faixa geral de investimento (ex: R$8k-15k/mes) sem detalhar salarios individuais. Perfis: ' + an.teamRoles.join(', ')
+          : 'Based on the profiles needed for this project, estimate the approximate monthly team investment in Brazil for 2024-2025. Be direct: provide only a general investment range (e.g. R$8k-15k/month) without detailing individual salaries. Profiles: ' + an.teamRoles.join(', ');
         an.teamCostData = await apiSearch(teamQuery, 300);
       } catch(e) { an.teamCostData = null; }
     }
     state.analysis = an;
+    _saveSimulation();
     var funded = an.score >= 65;
     try { simCount++; localStorage.setItem('simly_n', simCount); } catch(e) {}
 
@@ -1337,18 +1391,10 @@ function openLogin(tab) {
     + '<div class="auth-tab ' + (t==='in'?'active':'') + '" onclick="openLogin(&apos;in&apos;)">ENTRAR</div>'
     + '<div class="auth-tab ' + (t==='up'?'active':'') + '" onclick="openLogin(&apos;up&apos;)">CRIAR CONTA</div>'
     + '</div>'
-    + (t==='in'
-      ? '<div class="auth-field"><label class="auth-lbl">Email</label><input class="auth-input" type="email" placeholder="seu@email.com"></div>'
-      + '<div class="auth-field"><label class="auth-lbl">Senha</label><input class="auth-input" type="password" placeholder="••••••••"><span class="auth-forgot">Esqueci minha senha</span></div>'
-      + '<button class="auth-btn" onclick="closeLogin()">ENTRAR</button>'
-      : '<div class="auth-field"><label class="auth-lbl">Nome</label><input class="auth-input" type="text" placeholder="Seu nome"></div>'
-      + '<div class="auth-field"><label class="auth-lbl">Email</label><input class="auth-input" type="email" placeholder="seu@email.com"></div>'
-      + '<div class="auth-field"><label class="auth-lbl">Senha</label><input class="auth-input" type="password" placeholder="Mínimo 8 caracteres"></div>'
-      + '<button class="auth-btn" onclick="closeLogin()">CRIAR CONTA GRÁTIS</button>'
-    )
-    + '<div class="auth-divider"><div class="auth-divider-line"></div><div class="auth-divider-txt">ou</div><div class="auth-divider-line"></div></div>'
-    + '<button class="auth-google" onclick="closeLogin()"><svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/><path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/><path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/><path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/></svg>'
-    + (t==='in'?'CONTINUAR COM GOOGLE':'CADASTRAR COM GOOGLE') + '</button>'
+    + '<div id="auth-msg" style="display:none;font-family:Share Tech Mono,monospace;font-size:10px;padding:10px;margin-bottom:10px;text-align:center;letter-spacing:0.1em"></div>'
+    + '<div class="auth-field"><label class="auth-lbl">Email</label><input class="auth-input" id="auth-email" type="email" placeholder="seu@email.com"></div>'
+    + '<div class="auth-field"><label class="auth-lbl">Senha</label><input class="auth-input" id="auth-pass" type="password" placeholder="' + (t==='up'?'Mínimo 6 caracteres':'••••••••') + '"></div>'
+    + '<button class="auth-btn" onclick="' + (t==='in'?'_doLogin()':'_doSignup()') + '">' + (t==='in'?'ENTRAR':'CRIAR CONTA GRÁTIS') + '</button>'
     + '<div class="auth-footer">' + (t==='in'?'Não tem conta? <a onclick="openLogin(&apos;up&apos;)">Criar agora</a>':'Já tem conta? <a onclick="openLogin(&apos;in&apos;)">Entrar</a>') + '</div>'
     + '</div></div>';
   overlay.style.display = 'block';
@@ -1357,6 +1403,55 @@ function openLogin(tab) {
 
 function closeLogin() {
   document.getElementById('loginOverlay').style.display = 'none';
+}
+
+function _showAuthMsg(msg, color) {
+  var el = document.getElementById('auth-msg');
+  if (!el) return;
+  el.style.display = 'block';
+  el.style.color = color || 'var(--cyan)';
+  el.style.background = color === 'var(--pink)' ? 'rgba(255,45,120,0.1)' : 'rgba(0,245,255,0.08)';
+  el.style.border = '1px solid ' + (color || 'var(--cyan)');
+  el.textContent = msg;
+}
+
+async function _doLogin() {
+  var email = document.getElementById('auth-email');
+  var pass = document.getElementById('auth-pass');
+  if (!email || !pass) return;
+  _showAuthMsg('ENTRANDO...', 'var(--purple)');
+  var r = await _sb.auth.signInWithPassword({email: email.value, password: pass.value});
+  if (r.error) {
+    _showAuthMsg('ERRO: ' + (r.error.message || 'verifique seus dados'), 'var(--pink)');
+  } else {
+    _user = r.data.user;
+    closeLogin();
+    _updateMenuForUser();
+  }
+}
+
+async function _doSignup() {
+  var email = document.getElementById('auth-email');
+  var pass = document.getElementById('auth-pass');
+  if (!email || !pass) return;
+  _showAuthMsg('CRIANDO CONTA...', 'var(--purple)');
+  var r = await _sb.auth.signUp({email: email.value, password: pass.value});
+  if (r.error) {
+    _showAuthMsg('ERRO: ' + (r.error.message || 'tente novamente'), 'var(--pink)');
+  } else {
+    _showAuthMsg('CONTA CRIADA! Verifique seu email para confirmar.', 'var(--cyan)');
+    setTimeout(closeLogin, 3000);
+  }
+}
+
+async function _logout() {
+  await _sb.auth.signOut();
+  _user = null;
+  _updateMenuForUser();
+}
+
+function openMySims() {
+  alert('Em breve: suas simulações salvas aqui.');
 }
 
 // ── PAYWALL ──
