@@ -481,8 +481,8 @@ body.hud-visible #hmenu{top:100px;}
   <button class="hmenu-item" id="hmenu-plans" onclick="openPricing();toggleMenu()">PLANOS &amp; PREÇOS</button>
   <button class="hmenu-item" id="hmenu-entrar" onclick="openLogin(&apos;in&apos;);toggleMenu()">ENTRAR</button>
   <button class="hmenu-item highlight" id="hmenu-cadastrar" onclick="openLogin(&apos;up&apos;);toggleMenu()">CADASTRAR</button>
-  <button class="hmenu-item" id="hmenu-perfil" style="display:none;color:var(--muted2)" onclick="openMySims();toggleMenu()">'+(lang==='pt'?'MINHAS SIMULAÇÕES':'MY SIMULATIONS')+'</button>'
-  <button class="hmenu-item" id="hmenu-sair" style="display:none;color:var(--pink)" onclick="_logout();toggleMenu()">'+(lang==='pt'?'SAIR':'SIGN OUT')+'</button>'
+  <button class="hmenu-item" id="hmenu-perfil" style="display:none;color:var(--muted2)" onclick="openMySims();toggleMenu()">MINHAS SIMULAÇÕES</button>
+  <button class="hmenu-item" id="hmenu-sair" style="display:none;color:var(--pink)" onclick="_logout();toggleMenu()">SAIR</button>
 </div>
 <div id="simHud">
   <div class="hud-hearts" id="hudHearts"></div>
@@ -672,6 +672,8 @@ function _updateMenuForUser() {
   if (entrar) entrar.textContent = lang==='pt'?'ENTRAR':'SIGN IN';
   if (cadastrar) cadastrar.textContent = lang==='pt'?'CADASTRAR':'SIGN UP';
   if (plans) plans.innerHTML = lang==='pt'?'PLANOS &amp; PREÇOS':'PLANS &amp; PRICING';
+  if (perfil) perfil.textContent = lang==='pt'?'MINHAS SIMULAÇÕES':'MY SIMULATIONS';
+  if (sair) sair.textContent = lang==='pt'?'SAIR':'SIGN OUT';
   if (_user) {
     if (entrar) entrar.style.display = 'none';
     if (cadastrar) cadastrar.style.display = 'none';
