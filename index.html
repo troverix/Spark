@@ -169,7 +169,7 @@ textarea::placeholder{color:var(--muted);font-style:italic;}
 .ldots span:nth-child(2){background:var(--purple);animation-delay:0.2s;}
 .ldots span:nth-child(3){background:var(--cyan);animation-delay:0.4s;}
 @keyframes bounce{0%,80%,100%{transform:translateY(0);opacity:0.3}40%{transform:translateY(-7px);opacity:1}}
-.restart{text-align:center;margin-top:16px;padding-top:16px;border-top:1px solid var(--border);}
+.restart{text-align:center;margin-top:16px;padding-top:28px;border-top:1px solid var(--border);}
 .dash-footer{padding:10px 20px;border-top:1px solid var(--border);font-family:'Share Tech Mono',monospace;font-size:8px;letter-spacing:0.15em;text-transform:uppercase;color:var(--muted);text-align:center;}
 .intro-screen{text-align:center;padding:8px 0;}
 .intro-logo{font-family:'Orbitron',monospace;font-size:clamp(48px,16vw,80px);font-weight:900;letter-spacing:0.15em;line-height:1;color:var(--cyan);text-shadow:0 0 30px rgba(0,245,255,0.7),0 0 80px rgba(0,245,255,0.3);margin-bottom:8px;}
@@ -195,6 +195,42 @@ textarea::placeholder{color:var(--muted);font-style:italic;}
 @keyframes pulse{0%,100%{box-shadow:0 0 20px rgba(0,245,255,0.1);}50%{box-shadow:0 0 40px rgba(0,245,255,0.25);}}
 @media(hover:hover){.btn-start:hover{background:rgba(0,245,255,0.15);animation:none;}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+/* ── THEME SELECTION ── */
+.theme-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:20px;}
+.theme-opt{
+  background:rgba(0,0,0,0.3);
+  border:1px solid var(--border);
+  border-left:4px solid var(--tc,var(--border));
+  padding:16px 14px;
+  cursor:pointer;
+  text-align:left;
+  position:relative;
+  transition:all 0.15s;
+}
+.theme-opt:hover{background:rgba(255,255,255,0.03);border-color:var(--tc,var(--muted2));border-left-color:var(--tc,var(--muted2));}
+.theme-opt.selected{
+  background:rgba(255,255,255,0.04);
+  border-color:var(--tc,var(--cyan));
+  border-left-width:4px;
+  border-left-color:var(--tc,var(--cyan));
+}
+.theme-opt.selected::before{content:'';position:absolute;top:0;left:0;right:0;height:1px;background:var(--tc,var(--cyan));}
+.theme-opt-check{
+  position:absolute;top:8px;right:8px;
+  width:14px;height:14px;
+  background:var(--tc,var(--cyan));
+  display:none;align-items:center;justify-content:center;
+  font-size:8px;color:var(--bg);font-family:var(--px);
+}
+.theme-opt.selected .theme-opt-check{display:flex;}
+.theme-opt-name{
+  font-family:var(--px);font-size:8px;
+  letter-spacing:0.1em;
+  color:var(--tc,var(--text));
+  margin-bottom:6px;line-height:1.6;
+}
+.theme-opt-hint{font-size:11px;color:var(--muted2);line-height:1.5;}
+
 /* ── HUD ── */
 #simHud{
   position:fixed;top:0;left:0;right:0;z-index:990;
@@ -442,11 +478,11 @@ body.hud-visible #hmenu{top:100px;}
 <body>
 <div id="hamburger" onclick="toggleMenu()"><span>☰</span></div>
 <div id="hmenu">
-  <button class="hmenu-item" onclick="openPricing();toggleMenu()">PLANOS &amp; PREÇOS</button>
-  <button class="hmenu-item" id="hmenu-entrar" onclick="openLogin(&apos;in&apos;);toggleMenu()">ENTRAR</button>
-  <button class="hmenu-item highlight" id="hmenu-cadastrar" onclick="openLogin(&apos;up&apos;);toggleMenu()">CADASTRAR</button>
-  <button class="hmenu-item" id="hmenu-perfil" style="display:none;color:var(--muted2)" onclick="openMySims();toggleMenu()">MINHAS SIMULAÇÕES</button>
-  <button class="hmenu-item" id="hmenu-sair" style="display:none;color:var(--pink)" onclick="_logout();toggleMenu()">SAIR</button>
+  <button class="hmenu-item" onclick="openPricing();toggleMenu()">(lang==='pt'?'PLANOS &amp; PREÇOS':'PLANS &amp; PRICING')</button>
+  <button class="hmenu-item" id="hmenu-entrar" onclick="openLogin(&apos;in&apos;);toggleMenu()" data-pt="ENTRAR" data-en="SIGN IN">ENTRAR</button>
+  <button class="hmenu-item highlight" id="hmenu-cadastrar" onclick="openLogin(&apos;up&apos;);toggleMenu()" data-pt="CADASTRAR" data-en="SIGN UP">CADASTRAR</button>
+  <button class="hmenu-item" id="hmenu-perfil" style="display:none;color:var(--muted2)" onclick="openMySims();toggleMenu()">'+(lang==='pt'?'MINHAS SIMULAÇÕES':'MY SIMULATIONS')+'</button>'
+  <button class="hmenu-item" id="hmenu-sair" style="display:none;color:var(--pink)" onclick="_logout();toggleMenu()">'+(lang==='pt'?'SAIR':'SIGN OUT')+'</button>'
 </div>
 <div id="simHud">
   <div class="hud-hearts" id="hudHearts"></div>
@@ -669,7 +705,7 @@ var hist = [];
 var story = [];
 var chapNum = 0;
 var simCount = 0;
-var state = {spark:'', objective:'', outcome:'', title:'', analysis:null};
+var state = {spark:'', objective:'', outcome:'', title:'', analysis:null, theme:'negocio'};
 try { simCount = parseInt(localStorage.getItem('simly_n') || '0'); } catch(e) {}
 
 // ── MOCK MODE ──
@@ -935,6 +971,7 @@ function hideUI(hide) {
 function render() {
   var a = document.getElementById('app');
   if (phase === 'intro') { hideUI(true); showIntro(a); return; }
+  if (phase === 'theme') { hideUI(true); showTheme(a); return; }
   hideUI(false);
   var idx = ['spark','objective','outcome','rpg','verdict','dashboard'].indexOf(phase);
   prog(idx < 0 ? 0 : idx);
@@ -984,7 +1021,9 @@ function showIntro(a) {
     streakHtml = '<div class="streak" id="user-sim-streak">' + _pixelBulb() + ' ... CARREGANDO...</div>';
     setTimeout(_updateStreakDisplay, 300);
   } else {
-    streakHtml = simCount > 0 ? '<div class="streak">&#9889; ' + simCount + ' SIM</div>' : '';
+    var anonUsed = _getAnonSimCount();
+    var anonRemaining = Math.max(0, 2 - anonUsed);
+    streakHtml = '<div class="streak">' + _pixelBulb() + ' ' + anonRemaining + (lang==='pt'?' DE 2 SIMS DISPONÍVEIS':' OF 2 SIMS AVAILABLE') + '</div>';
   }
   var stepList = tx.steps.map(function(s, i) {
     return '<div class="intro-step"><div class="intro-step-num">0' + (i+1) + '</div><div class="intro-step-text"><strong>' + s.t + '</strong><span>' + s.d + '</span></div></div>';
@@ -1012,17 +1051,58 @@ function showIntro(a) {
 }
 
 function setLang(l) { lang = l; showIntro(document.getElementById('app')); }
+function _getAnonSimCount() {
+  try { return parseInt(localStorage.getItem('simly_anon_count') || '0'); } catch(e) { return 0; }
+}
+function _incAnonSimCount() {
+  try { localStorage.setItem('simly_anon_count', String(_getAnonSimCount() + 1)); } catch(e) {}
+}
+
 function startFromIntro() {
   if (_user) {
+    // Logged in — check server-side count
     var used = window._userSimCount || 0;
     var limit = window._userSimLimit || 2;
     if (used >= limit) {
       _showNoCreditsModal();
       return;
     }
+  } else {
+    // Not logged in — check localStorage count
+    var anonUsed = _getAnonSimCount();
+    var anonLimit = 2;
+    if (anonUsed >= anonLimit) {
+      _showAnonLimitModal();
+      return;
+    }
   }
-  phase = 'spark';
+  phase = 'theme';
   render();
+}
+
+function _showAnonLimitModal() {
+  var modal = document.createElement('div');
+  modal.id = 'anonLimitModal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(7,7,20,0.92);display:flex;align-items:center;justify-content:center;padding:20px;';
+  modal.innerHTML = ''
+    + '<div style="background:var(--surface);border:2px solid var(--cyan);max-width:320px;width:100%;position:relative;overflow:hidden;">'
+    + '<div style="background:rgba(0,245,255,0.08);padding:20px;text-align:center;border-bottom:1px solid rgba(0,245,255,0.3);">'
+    + _pixelBulb() + _pixelBulb()
+    + '<div style="font-family:var(--px);font-size:9px;color:var(--cyan);margin-top:10px;line-height:1.9">'
+    + (lang==='pt'?'SIMULAÇÕES ESGOTADAS':'SIMULATIONS USED UP') + '</div>'
+    + '</div>'
+    + '<div style="padding:20px;text-align:center;">'
+    + '<p style="font-size:13px;color:var(--muted2);line-height:1.7;margin-bottom:16px;">'
+    + (lang==='pt'?'Você usou suas 2 simulações gratuitas. Crie uma conta gratuita para continuar.':'You used your 2 free simulations. Create a free account to continue.')
+    + '</p>'
+    + '<button onclick="document.getElementById(&apos;anonLimitModal&apos;).remove();openLogin(&apos;up&apos;);" style="width:100%;font-family:var(--px);font-size:9px;padding:16px;background:rgba(0,245,255,0.08);border:2px solid var(--cyan);color:var(--cyan);cursor:pointer;margin-bottom:10px;letter-spacing:0.08em;">'
+    + (lang==='pt'?'CRIAR CONTA GRÁTIS':'CREATE FREE ACCOUNT') + '</button>'
+    + '<button onclick="document.getElementById(&apos;anonLimitModal&apos;).remove();openLogin(&apos;in&apos;);" style="width:100%;font-family:var(--px);font-size:8px;padding:12px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;letter-spacing:0.08em;">'
+    + (lang==='pt'?'JÁ TENHO CONTA':'I ALREADY HAVE AN ACCOUNT') + '</button>'
+    + '<button onclick="document.getElementById(&apos;anonLimitModal&apos;).remove();" style="width:100%;font-family:var(--px);font-size:7px;padding:10px;background:transparent;border:none;color:var(--muted);cursor:pointer;margin-top:4px;letter-spacing:0.08em;">'
+    + (lang==='pt'?'FECHAR':'CLOSE') + '</button>'
+    + '</div></div>';
+  document.body.appendChild(modal);
 }
 
 function _discardSim() {
@@ -1054,7 +1134,7 @@ function _setUserPlan(limit) {
   window._userSimLimit = limit;
   _updateStreakDisplay();
   _renderHud();
-  var msg = limit === 5 ? 'PACK STARTER ATIVADO · 5 SIMULAÇÕES' : 'PACK PRO ATIVADO · 15 SIMULAÇÕES';
+  var msg = limit === 5 ? (lang==='pt'?(lang==='pt'?'PACK STARTER ATIVADO · 5 SIMULAÇÕES':'PACK STARTER ACTIVATED · 5 SIMULATIONS'):'PACK STARTER ACTIVATED · 5 SIMULATIONS') : (lang==='pt'?(lang==='pt'?'PACK PRO ATIVADO · 15 SIMULAÇÕES':'PACK PRO ACTIVATED · 15 SIMULATIONS'):'PACK PRO ACTIVATED · 15 SIMULATIONS');
   var toast = document.createElement('div');
   toast.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%);z-index:2000;background:var(--surface);border:1px solid var(--cyan);padding:10px 20px;font-family:var(--px);font-size:7px;color:var(--cyan);letter-spacing:0.1em;white-space:nowrap;';
   toast.textContent = '✓ ' + msg;
@@ -1092,6 +1172,65 @@ function _showNoCreditsModal() {
     + (lang==='pt'?'FECHAR':'CLOSE') + '</button>'
     + '</div></div>';
   document.body.appendChild(modal);
+}
+
+// ── THEME ──
+function showTheme(a) {
+  var tx = t();
+  var themes = [
+    { id:'negocio', icon:'rocket', label: lang==='pt'?'NEGÓCIO':'BUSINESS', hint: lang==='pt'?'Startup, produto, serviço, empresa':'Startup, product, service, company', color:'var(--cyan)' },
+    { id:'criativo', icon:'palette', label: lang==='pt'?'CRIATIVO':'CREATIVE', hint: lang==='pt'?'Arte, música, conteúdo, marca pessoal':'Art, music, content, personal brand', color:'var(--purple)' },
+    { id:'impacto', icon:'leaf', label: lang==='pt'?'IMPACTO':'IMPACT', hint: lang==='pt'?'ONG, causa, comunidade, ESG':'NGO, cause, community, ESG', color:'#00cc88' },
+    { id:'carreira', icon:'bolt', label: lang==='pt'?'CARREIRA':'CAREER', hint: lang==='pt'?'Freelance, transição, posicionamento':'Freelance, transition, positioning', color:'#ffaa00' }
+  ];
+
+  function pixelIcon(type, color) {
+    var icons = {
+      rocket: '<svg width="32" height="40" viewBox="0 0 8 10" style="image-rendering:pixelated"><rect x="3" y="0" width="2" height="1" fill="#ffffff"/><rect x="2" y="1" width="4" height="1" fill="#ffffff"/><rect x="1" y="2" width="6" height="1" fill="'+color+'"/><rect x="1" y="3" width="6" height="2" fill="'+color+'"/><rect x="0" y="3" width="1" height="2" fill="#ff2d78"/><rect x="7" y="3" width="1" height="2" fill="#ff2d78"/><rect x="2" y="5" width="4" height="1" fill="'+color+'"/><rect x="3" y="6" width="2" height="1" fill="#888"/><rect x="3" y="7" width="1" height="2" fill="#ff6600"/><rect x="4" y="7" width="1" height="2" fill="#ffaa00"/></svg>',
+      palette: '<svg width="32" height="32" viewBox="0 0 8 8" style="image-rendering:pixelated"><rect x="1" y="0" width="6" height="1" fill="'+color+'"/><rect x="0" y="1" width="1" height="4" fill="'+color+'"/><rect x="7" y="1" width="1" height="4" fill="'+color+'"/><rect x="1" y="5" width="2" height="1" fill="'+color+'"/><rect x="5" y="5" width="2" height="1" fill="'+color+'"/><rect x="2" y="2" width="1" height="1" fill="#ff2d78"/><rect x="4" y="2" width="1" height="1" fill="#ffff00"/><rect x="3" y="3" width="1" height="1" fill="#00f5ff"/><rect x="5" y="2" width="1" height="1" fill="#00ff88"/><rect x="6" y="3" width="1" height="2" fill="#ffffff"/><rect x="5" y="6" width="2" height="2" fill="#ffffff"/></svg>',
+      leaf: '<svg width="32" height="32" viewBox="0 0 8 8" style="image-rendering:pixelated"><rect x="4" y="0" width="3" height="1" fill="'+color+'"/><rect x="5" y="1" width="2" height="1" fill="'+color+'"/><rect x="2" y="1" width="4" height="1" fill="'+color+'"/><rect x="1" y="2" width="5" height="1" fill="'+color+'"/><rect x="1" y="3" width="4" height="1" fill="'+color+'"/><rect x="2" y="4" width="3" height="1" fill="'+color+'"/><rect x="2" y="5" width="2" height="1" fill="'+color+'"/><rect x="3" y="4" width="1" height="4" fill="#006633"/></svg>',
+      bolt: '<svg width="32" height="32" viewBox="0 0 8 8" style="image-rendering:pixelated"><rect x="4" y="0" width="3" height="1" fill="'+color+'"/><rect x="3" y="1" width="3" height="1" fill="'+color+'"/><rect x="2" y="2" width="4" height="1" fill="'+color+'"/><rect x="1" y="3" width="5" height="1" fill="'+color+'"/><rect x="3" y="3" width="3" height="1" fill="'+color+'"/><rect x="2" y="4" width="3" height="1" fill="'+color+'"/><rect x="1" y="5" width="3" height="1" fill="'+color+'"/><rect x="1" y="6" width="2" height="1" fill="'+color+'"/></svg>'
+    };
+    return icons[type] || '';
+  }
+
+  var cards = themes.map(function(th) {
+    return '<div class="theme-opt" id="topt-' + th.id + '" onclick="selectTheme(&apos;' + th.id + '&apos;)" style="--tc:' + th.color + '">'
+      + '<div class="theme-opt-check" id="tcheck-' + th.id + '">✓</div>'
+      + '<div class="theme-opt-name">' + th.label + '</div>'
+      + '<div class="theme-opt-hint">' + th.hint + '</div>'
+      + '</div>';
+  }).join('');
+
+  a.innerHTML = '<div class="intro-screen">'
+    + '<div class="intro-logo">SIMLY</div>'
+    + '<div class="intro-sub">' + (lang==='pt'?'SIMULE ANTES DE CONSTRUIR':'SIMULATE BEFORE YOU BUILD') + '</div>'
+    + '<div class="card">'
+    + '<div style="text-align:center;margin-bottom:20px;padding-top:16px">'
+    + '<div class="step-title" style="color:var(--purple);font-size:clamp(11px,3vw,14px);margin-bottom:8px">' + (lang==='pt'?'QUAL É O CONTEXTO?':'WHAT IS THE CONTEXT?') + '</div>'
+    + '<div style="font-size:13px;color:var(--muted2);line-height:1.6">' + (lang==='pt'?'Isso afina a análise para o que realmente importa no seu caso.':'This tunes the analysis for what really matters in your case.') + '</div>'
+    + '</div>'
+    + '<div class="theme-grid">' + cards + '</div>'
+    + '<button class="btn btn-cyan" id="themeStartBtn" style="width:100%;opacity:0.4;pointer-events:none;font-family:var(--px);font-size:9px" onclick="startFromTheme()">'
+    + (lang==='pt'?'CONTINUAR':'CONTINUE') + '</button>'
+    + '</div></div>';
+}
+
+function selectTheme(id) {
+  state.theme = id;
+  document.querySelectorAll('.theme-opt').forEach(function(el){ 
+    el.classList.remove('selected'); 
+  });
+  var el = document.getElementById('topt-' + id);
+  if (el) el.classList.add('selected');
+  var btn = document.getElementById('themeStartBtn');
+  if (btn) { btn.style.opacity='1'; btn.style.pointerEvents='all'; }
+}
+
+function startFromTheme() {
+  if (!state.theme) return;
+  phase = 'spark';
+  render();
 }
 
 // ── SPARK ──
@@ -1142,7 +1281,45 @@ function showObjective(a) {
 function nextObjective() {
   if (!go('inp')) return;
   state.objective = document.getElementById('inp').value.trim();
+  if (!_user) {
+    _showLoginToSimulate();
+    return;
+  }
   attempt = 0; phase = 'outcome'; render();
+}
+
+function _showLoginToSimulate() {
+  var modal = document.createElement('div');
+  modal.id = 'loginSimModal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(7,7,20,0.92);display:flex;align-items:center;justify-content:center;padding:20px;';
+  modal.innerHTML = ''
+    + '<div style="background:var(--surface);border:2px solid var(--cyan);max-width:340px;width:100%;overflow:hidden;">'
+    + '<div style="background:rgba(0,245,255,0.06);padding:20px;text-align:center;border-bottom:1px solid rgba(0,245,255,0.2);">'
+    + '<div style="font-family:var(--px);font-size:8px;color:var(--cyan);line-height:1.9;margin-bottom:6px">'
+    + (lang==='pt'?'SUA IDEIA ESTÁ PRONTA':'YOUR IDEA IS READY') + '</div>'
+    + '<div style="font-size:13px;color:var(--muted2);line-height:1.6">' + (lang==='pt'?'Entre ou crie sua conta gratuita para gerar a hipótese.':'Sign in or create your free account to generate the hypothesis.') + '</div>'
+    + '</div>'
+    + '<div style="padding:20px;">' 
+    + '<button onclick="_loginThenSimulate();" style="width:100%;font-family:var(--px);font-size:9px;padding:16px;background:rgba(0,245,255,0.08);border:2px solid var(--cyan);color:var(--cyan);cursor:pointer;margin-bottom:10px;letter-spacing:0.08em;">' + (lang==='pt'?'CRIAR CONTA GRÁTIS':'CREATE FREE ACCOUNT') + '</button>'
+    + '<button onclick="_loginThenSimulateIn();" style="width:100%;font-family:var(--px);font-size:8px;padding:12px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;letter-spacing:0.08em;">' + (lang==='pt'?'JÁ TENHO CONTA':'I HAVE AN ACCOUNT') + '</button>'
+    + '<button onclick="document.getElementById(&apos;loginSimModal&apos;).remove();" style="width:100%;font-family:var(--px);font-size:7px;padding:10px;background:transparent;border:none;color:var(--muted);cursor:pointer;margin-top:4px;letter-spacing:0.08em;">' + (lang==='pt'?'FECHAR':'CLOSE') + '</button>'
+    + '</div></div>';
+  document.body.appendChild(modal);
+}
+
+function _loginThenSimulate() {
+  var m = document.getElementById('loginSimModal');
+  if (m) m.remove();
+  // After login, continue to outcome
+  window._pendingSimAfterLogin = true;
+  openLogin('up');
+}
+
+function _loginThenSimulateIn() {
+  var m = document.getElementById('loginSimModal');
+  if (m) m.remove();
+  window._pendingSimAfterLogin = true;
+  openLogin('in');
 }
 
 // ── OUTCOME ──
@@ -1315,8 +1492,8 @@ async function showVerdict(a) {
         : 'Evaluate the viability of this solution. JSON no backticks. In the similarProjects field, only include entries if there are directly comparable products or services — otherwise return empty array.\n\nProblem: ' + state.spark + '\nNeed: ' + state.objective + '\nSolution: ' + state.outcome + '\nContext: ' + marketData + '\n\nCriteria (avoid 60-75):\n- 85-100: clear solution, applicable, resolves the problem\n- 65-84: good solution with manageable obstacles\n- 45-64: partial solution or with limitations\n- 0-44: does not resolve or impractical\n\n{"score":0-100,"scoreLabel":"3-5 words","marketInsight":"1-2 sentences about context","similarProjects":[{"name":"product name","description":"what it does and how it relates"}],"strengths":["s1","s2"],"risks":[{"risk":"limitation","mitigation":"how to overcome"}],"solutions":["variation 1","variation 2","variation 3"],"teamNeeded":true,"teamRoles":["role 1","role 2"]}. If no team needed return teamNeeded:false and teamRoles:[].';
     } else {
       p = lang === 'pt'
-        ? 'Analise o potencial desta ideia. JSON sem backticks. No campo similarProjects, inclua apenas se houver produtos ou servicos diretamente comparaveis — caso contrario retorne array vazio.\n\nSpark: ' + state.spark + '\nObjective: ' + state.objective + '\nHipotese: ' + state.outcome + '\nMercado: ' + marketData + '\n\nCriterios (evite 60-75):\n- 85-100: mercado grande e crescente, demanda comprovada\n- 65-84: mercado existe, demanda emergente\n- 45-64: mercado pequeno ou incerto\n- 0-44: mercado inexistente ou timing ruim\n\n{"score":0-100,"scoreLabel":"3-5 palavras","marketInsight":"1-2 frases com dados de mercado","similarProjects":[{"name":"nome do produto","description":"o que faz e como se relaciona"}],"strengths":["s1","s2"],"risks":[{"risk":"risco","mitigation":"mitigacao"}],"solutions":["caminho 1","caminho 2","caminho 3"],"teamNeeded":true,"teamRoles":["papel 1","papel 2"]}. Se nao precisar de equipe retorne teamNeeded:false e teamRoles:[].'
-        : 'Analyze the potential of this idea. JSON no backticks. In the similarProjects field, only include entries if there are directly comparable products or services — otherwise return empty array.\n\nSpark: ' + state.spark + '\nObjective: ' + state.objective + '\nHypothesis: ' + state.outcome + '\nMarket: ' + marketData + '\n\nCriteria (avoid 60-75):\n- 85-100: large growing market, proven demand\n- 65-84: market exists, emerging demand\n- 45-64: small or uncertain market\n- 0-44: non-existent market or bad timing\n\n{"score":0-100,"scoreLabel":"3-5 words","marketInsight":"1-2 sentences with market data","similarProjects":[{"name":"product name","description":"what it does and how it relates"}],"strengths":["s1","s2"],"risks":[{"risk":"risk","mitigation":"mitigation"}],"solutions":["path 1","path 2","path 3"],"teamNeeded":true,"teamRoles":["role 1","role 2"]}. If no team needed return teamNeeded:false and teamRoles:[].';
+        ? 'Analise o potencial desta ideia. Contexto: ' + (state.theme==='criativo'?'projeto criativo (arte, música, conteúdo, marca pessoal)':state.theme==='impacto'?'impacto social (ONG, causa, comunidade)':state.theme==='carreira'?'carreira e posicionamento profissional':'negócio e empreendedorismo') + '. JSON sem backticks. No campo similarProjects, inclua apenas se houver produtos ou servicos diretamente comparaveis — caso contrario retorne array vazio.\n\nSpark: ' + state.spark + '\nObjective: ' + state.objective + '\nHipotese: ' + state.outcome + '\nMercado: ' + marketData + '\n\nCriterios (evite 60-75):\n- 85-100: mercado grande e crescente, demanda comprovada\n- 65-84: mercado existe, demanda emergente\n- 45-64: mercado pequeno ou incerto\n- 0-44: mercado inexistente ou timing ruim\n\n{"score":0-100,"scoreLabel":"3-5 palavras","marketInsight":"1-2 frases com dados de mercado","similarProjects":[{"name":"nome do produto","description":"o que faz e como se relaciona"}],"strengths":["s1","s2"],"risks":[{"risk":"risco","mitigation":"mitigacao"}],"solutions":["caminho 1","caminho 2","caminho 3"],"teamNeeded":true,"teamRoles":["papel 1","papel 2"]}. Se nao precisar de equipe retorne teamNeeded:false e teamRoles:[].'
+        : 'Analyze the potential of this idea. Context: ' + (state.theme==='criativo'?'creative project (art, music, content, personal brand)':state.theme==='impacto'?'social impact (NGO, cause, community)':state.theme==='carreira'?'career and professional positioning':'business and entrepreneurship') + '. JSON no backticks. In the similarProjects field, only include entries if there are directly comparable products or services — otherwise return empty array.\n\nSpark: ' + state.spark + '\nObjective: ' + state.objective + '\nHypothesis: ' + state.outcome + '\nMarket: ' + marketData + '\n\nCriteria (avoid 60-75):\n- 85-100: large growing market, proven demand\n- 65-84: market exists, emerging demand\n- 45-64: small or uncertain market\n- 0-44: non-existent market or bad timing\n\n{"score":0-100,"scoreLabel":"3-5 words","marketInsight":"1-2 sentences with market data","similarProjects":[{"name":"product name","description":"what it does and how it relates"}],"strengths":["s1","s2"],"risks":[{"risk":"risk","mitigation":"mitigation"}],"solutions":["path 1","path 2","path 3"],"teamNeeded":true,"teamRoles":["role 1","role 2"]}. If no team needed return teamNeeded:false and teamRoles:[].';
     }
     var an = await api(p, 600);
     // Convert categoria to score to avoid model anchoring on 72
@@ -1347,6 +1524,7 @@ async function showVerdict(a) {
     }
     state.analysis = an;
     _saveSimulation();
+    if (!_user) { _incAnonSimCount(); }
     var funded = an.score >= 65;
     try { simCount++; localStorage.setItem('simly_n', simCount); } catch(e) {}
 
@@ -1622,6 +1800,7 @@ function errScreen(a, msg, retry, back) {
 }
 
 function resetAll() {
+  state.theme = '';
   state = {spark:'', objective:'', outcome:'', title:'', analysis:null};
   phase = 'intro'; hist = []; story = []; chapNum = 0; attempt = 0; mode = 'idea';
   _resetPaid();
@@ -1802,7 +1981,8 @@ function openLogin(tab) {
     + '<div class="auth-field"><label class="auth-lbl">Email</label><input class="auth-input" id="auth-email" type="email" placeholder="seu@email.com"></div>'
     + '<div class="auth-field"><label class="auth-lbl">Senha</label><input class="auth-input" id="auth-pass" type="password" placeholder="' + (t==='up'?'Mínimo 6 caracteres':'••••••••') + '"></div>'
     + '<button class="auth-btn" onclick="' + (t==='in'?'_doLogin()':'_doSignup()') + '">' + (t==='in'?'ENTRAR':'CRIAR CONTA GRÁTIS') + '</button>'
-    + '<div class="auth-footer">' + (t==='in'?'Não tem conta? <a onclick="openLogin(&apos;up&apos;)">Criar agora</a>':'Já tem conta? <a onclick="openLogin(&apos;in&apos;)">Entrar</a>') + '</div>'
+    + (t==='in' ? '<div style="text-align:center;margin-top:10px"><a onclick="_doForgotPassword()" style="font-family:Share Tech Mono,monospace;font-size:9px;color:var(--muted2);cursor:pointer;letter-spacing:0.1em;text-decoration:underline;">' + (lang==='pt'?'Esqueci minha senha':'Forgot my password') + '</a></div>' : '')
+    + '<div class="auth-footer">' + (t==='in'?(lang==='pt'?'Não tem conta? <a onclick=\"openLogin(&apos;up&apos;)\">Criar agora</a>':"Don't have an account? <a onclick=\"openLogin(&apos;up&apos;)\">Sign up</a>"):(lang==='pt'?'Já tem conta? <a onclick=\"openLogin(&apos;in&apos;)\">Entrar</a>':"Already have an account? <a onclick=\"openLogin(&apos;in&apos;)\">Sign in</a>")) + '</div>'
     + '</div></div>';
   overlay.style.display = 'block';
   overlay.scrollTop = 0;
@@ -1822,20 +2002,41 @@ function _showAuthMsg(msg, color) {
   el.textContent = msg;
 }
 
+async function _doForgotPassword() {
+  var email = document.getElementById('auth-email');
+  if (!email || !email.value) {
+    _showAuthMsg(lang==='pt'?'Digite seu email acima primeiro.':'Enter your email above first.', 'var(--pink)');
+    return;
+  }
+  _showAuthMsg(lang==='pt'?'ENVIANDO...':'SENDING...', 'var(--purple)');
+  var r = await _sb.auth.resetPasswordForEmail(email.value, {
+    redirectTo: window.location.origin
+  });
+  if (r.error) {
+    _showAuthMsg(lang==='pt'?'ERRO: ' + r.error.message:'ERROR: ' + r.error.message, 'var(--pink)');
+  } else {
+    _showAuthMsg(lang==='pt'?'✓ EMAIL ENVIADO! Verifique sua caixa de entrada.':'✓ EMAIL SENT! Check your inbox.', 'var(--cyan)');
+  }
+}
+
 async function _doLogin() {
   var email = document.getElementById('auth-email');
   var pass = document.getElementById('auth-pass');
   if (!email || !pass) return;
-  _showAuthMsg('ENTRANDO...', 'var(--purple)');
+  _showAuthMsg((lang==='pt'?'ENTRANDO...':'SIGNING IN...'), 'var(--purple)');
   var r = await _sb.auth.signInWithPassword({email: email.value, password: pass.value});
   if (r.error) {
-    _showAuthMsg('ERRO: ' + (r.error.message || 'verifique seus dados'), 'var(--pink)');
+    _showAuthMsg((lang==='pt'?'ERRO: ':'ERROR: ') + (r.error.message || (lang==='pt'?'verifique seus dados':'check your details')), 'var(--pink)');
   } else {
     _user = r.data.user;
     closeLogin();
     _updateMenuForUser();
     _loadUserSimCount();
     _renderHud();
+    if (window._pendingSimAfterLogin) {
+      window._pendingSimAfterLogin = false;
+      attempt = 0; phase = 'outcome'; render();
+    }
   }
 }
 
@@ -1843,12 +2044,12 @@ async function _doSignup() {
   var email = document.getElementById('auth-email');
   var pass = document.getElementById('auth-pass');
   if (!email || !pass) return;
-  _showAuthMsg('CRIANDO CONTA...', 'var(--purple)');
+  _showAuthMsg((lang==='pt'?'CRIANDO CONTA...':'CREATING ACCOUNT...'), 'var(--purple)');
   var r = await _sb.auth.signUp({email: email.value, password: pass.value});
   if (r.error) {
-    _showAuthMsg('ERRO: ' + (r.error.message || 'tente novamente'), 'var(--pink)');
+    _showAuthMsg((lang==='pt'?'ERRO: ':'ERROR: ') + (r.error.message || (lang==='pt'?'tente novamente':'try again')), 'var(--pink)');
   } else {
-    _showAuthMsg('✓ CONTA CRIADA COM SUCESSO! Bem-vindo ao Simly.', 'var(--cyan)');
+    _showAuthMsg((lang==='pt'?'✓ CONTA CRIADA COM SUCESSO! Bem-vindo ao Simly.':'✓ ACCOUNT CREATED! Welcome to Simly.'), 'var(--cyan)');
     _user = r.data.user;
     _updateMenuForUser();
     _loadUserSimCount();
@@ -1875,7 +2076,7 @@ async function openMySims() {
     + '<div style="font-family:Orbitron,monospace;font-size:18px;font-weight:900;color:var(--cyan);letter-spacing:0.1em">MINHAS SIMULAÇÕES</div>'
     + '<button onclick="closeMySims()" style="font-family:Share Tech Mono,monospace;font-size:18px;color:var(--muted);background:transparent;border:none;cursor:pointer;padding:4px 8px">✕</button>'
     + '</div>'
-    + '<div id="sims-list"><div style="font-family:Share Tech Mono,monospace;font-size:10px;color:var(--muted);text-align:center;padding:40px 0;letter-spacing:0.2em">CARREGANDO...</div></div>';
+    + '<div id="sims-list"><div style="font-family:Share Tech Mono,monospace;font-size:10px;color:var(--muted);text-align:center;padding:40px 0;letter-spacing:0.2em">'+(lang==='pt'?'CARREGANDO...':'LOADING...')+'</div></div>';
 
   try {
     var r = await _sb.from('simulations')
@@ -1911,16 +2112,16 @@ async function openMySims() {
         + '</div>'
         + (hyp ? '<div class="sim-card-hypothesis">&ldquo;' + hyp + '&rdquo;</div>' : '')
         + '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">'
-        + '<div style="font-family:Share Tech Mono,monospace;font-size:11px;color:var(--muted2);letter-spacing:0.1em">VER ANÁLISE →</div>'
+        + '<div style="font-family:Share Tech Mono,monospace;font-size:11px;color:var(--muted2);letter-spacing:0.1em">'+(lang==='pt'?'VER ANÁLISE →':'VIEW ANALYSIS →')+'</div>'
         + '<div style="display:flex;gap:6px;">'
         + ((window._userSimLimit || 2) > 2 ? '<button onclick="event.stopPropagation();_exportSimPDF(' + idx + ')" style="font-family:Share Tech Mono,monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--cyan);background:transparent;border:1px solid rgba(0,245,255,0.3);padding:6px 12px;cursor:pointer;">PDF</button>' : '')
-        + '<button onclick="event.stopPropagation();_confirmDelete(&apos;' + s.id + '&apos;)" style="font-family:Share Tech Mono,monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--pink);background:transparent;border:1px solid rgba(255,45,120,0.3);padding:6px 12px;cursor:pointer;">DELETAR</button>'
+        + '<button onclick="event.stopPropagation();_confirmDelete(&apos;' + s.id + '&apos;)" style="font-family:Share Tech Mono,monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--pink);background:transparent;border:1px solid rgba(255,45,120,0.3);padding:6px 12px;cursor:pointer;">'+(lang==='pt'?'DELETAR':'DELETE')+'</button>'
         + '</div>'
         + '</div>'
         + '</div>';
     }).join('');
   } catch(e) {
-    document.getElementById('sims-list').innerHTML = '<div style="color:var(--pink);font-family:Share Tech Mono,monospace;font-size:10px;text-align:center;padding:20px">ERRO AO CARREGAR SIMULAÇÕES</div>';
+    document.getElementById('sims-list').innerHTML = '<div style="color:var(--pink);font-family:Share Tech Mono,monospace;font-size:10px;text-align:center;padding:20px">'+(lang==='pt'?'ERRO AO CARREGAR SIMULAÇÕES':'ERROR LOADING SIMULATIONS')+'</div>';
   }
 }
 
@@ -1935,10 +2136,10 @@ function _confirmDelete(id) {
   modal.id = 'deleteModal';
   modal.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(7,7,20,0.9);display:flex;align-items:center;justify-content:center;padding:20px';
   modal.innerHTML = '<div style="background:var(--surface);border:2px solid var(--pink);padding:24px;max-width:320px;width:100%;text-align:center">'
-    + '<div style="font-family:var(--px);font-size:9px;color:var(--pink);margin-bottom:16px;line-height:1.8">DELETAR SIMULAÇÃO?<br><span style=\'font-size:7px;color:var(--muted2)\'>Esta ação não pode ser desfeita.</span></div>'
+    + '<div style="font-family:var(--px);font-size:9px;color:var(--pink);margin-bottom:16px;line-height:1.8">'+(lang==='pt'?'DELETAR SIMULAÇÃO?':'DELETE SIMULATION?')+'<br><span style=\'font-size:7px;color:var(--muted2)\'>'+(lang==='pt'?'Esta ação não pode ser desfeita.':'This action cannot be undone.')+'</span></div>'
     + '<div style="display:flex;gap:10px">'
-    + '<button onclick="_cancelDelete()" style="flex:1;font-family:var(--px);font-size:8px;padding:12px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;">CANCELAR</button>'
-    + '<button onclick="_doDelete()" style="flex:1;font-family:var(--px);font-size:8px;padding:12px;background:rgba(255,45,120,0.15);border:1px solid var(--pink);color:var(--pink);cursor:pointer;">DELETAR</button>'
+    + '<button onclick="_cancelDelete()" style="flex:1;font-family:var(--px);font-size:8px;padding:12px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;">'+(lang==='pt'?'CANCELAR':'CANCEL')+'</button>'
+    + '<button onclick="_doDelete()" style="flex:1;font-family:var(--px);font-size:8px;padding:12px;background:rgba(255,45,120,0.15);border:1px solid var(--pink);color:var(--pink);cursor:pointer;">'+(lang==='pt'?'DELETAR':'DELETE')+'</button>'
     + '</div></div>';
   document.body.appendChild(modal);
 }
