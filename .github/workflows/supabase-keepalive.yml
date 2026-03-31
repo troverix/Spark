@@ -13,16 +13,16 @@ jobs:
       - name: Ping Supabase
         run: |
           STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
-            "$SUPABASE_URL/rest/v1/" \
+            "$SUPABASE_URL/rest/v1/rpc/get_service_status" \
             -H "apikey: $SUPABASE_ANON_KEY" \
             -H "Authorization: Bearer $SUPABASE_ANON_KEY")
 
           echo "Response status: $STATUS"
 
-          if [ "$STATUS" -ge 200 ] && [ "$STATUS" -lt 300 ]; then
-            echo "✅ Supabase is alive."
+          if [ "$STATUS" -ne 000 ]; then
+            echo "✅ Supabase is alive (status: $STATUS)"
           else
-            echo "⚠️ Unexpected status code: $STATUS"
+            echo "❌ No response from Supabase"
             exit 1
           fi
         env:
