@@ -517,8 +517,11 @@ body.hud-visible #hmenu{top:100px;}
 <body>
 <div id="hamburger" onclick="toggleMenu()"><span>☰</span></div>
 <div id="hmenu">
+  <div style="display:flex;border-bottom:1px solid var(--border);">
+    <button class="hmenu-item" style="flex:1;text-align:center;border-bottom:none;border-right:1px solid var(--border);" id="hmenu-lang-pt" onclick="setLang('pt');toggleMenu()">PT</button>
+    <button class="hmenu-item" style="flex:1;text-align:center;border-bottom:none;" id="hmenu-lang-en" onclick="setLang('en');toggleMenu()">EN</button>
+  </div>
   <button class="hmenu-item" id="hmenu-skins" onclick="openSkinsOverlay();toggleMenu()">🚀 SKINS</button>
-  <button class="hmenu-item" id="hmenu-plans" onclick="openPricing();toggleMenu()">PLANOS &amp; PREÇOS</button>
   <button class="hmenu-item" id="hmenu-entrar" onclick="openLogin(&apos;in&apos;);toggleMenu()">ENTRAR</button>
   <button class="hmenu-item highlight" id="hmenu-cadastrar" onclick="openLogin(&apos;up&apos;);toggleMenu()">CADASTRAR</button>
   <button class="hmenu-item" id="hmenu-perfil" style="display:none;color:var(--muted2)" onclick="openMySims();toggleMenu()">MINHAS SIMULAÇÕES</button>
@@ -589,7 +592,7 @@ body.hud-visible #hmenu{top:100px;}
       <div class="pw-item">Ideias similares no mercado</div>
       <div class="pw-item">Relatório PDF para download</div>
     </div>
-    <div class="pw-price">R$9,90 <span>3 simulações completas</span></div>
+    <div class="pw-price">R$9,90 <span>' + (lang==='pt'?'sims extras':'extra sims') + '</span></div>
     <button class="pw-btn" onclick="goToPayment()">🔓 DESBLOQUEAR AGORA</button>
   </div>
 </div>
@@ -630,15 +633,14 @@ _sb.auth.onAuthStateChange(function(event, session) {
 async function _loadUserSimCount() {
   if (!_user) return;
   try {
-    var startOfMonth = new Date();
-    startOfMonth.setDate(1);
-    startOfMonth.setHours(0,0,0,0);
+    var startOfDay = new Date();
+    startOfDay.setHours(0,0,0,0);
     var r = await _sb.from('simulations')
       .select('id', {count:'exact', head:true})
       .eq('user_id', _user.id)
-      .gte('created_at', startOfMonth.toISOString());
+      .gte('created_at', startOfDay.toISOString());
     window._userSimCount = r.count || 0;
-    window._userSimLimit = window._userSimLimit || 2; // keep plan if already set
+    window._userSimLimit = 3; // 3 free sims per day
     _updateStreakDisplay();
     _renderHud();
   } catch(e) { window._userSimCount = 0; }
@@ -666,7 +668,7 @@ function _renderHud() {
     return;
   }
   var used = window._userSimCount || 0;
-  var limit = window._userSimLimit || 2;
+  var limit = window._userSimLimit || 3;
   var remaining = Math.max(0, limit - used);
   var planName = limit <= 2 ? 'FREE' : limit <= 5 ? 'STARTER' : 'PRO';
   var color = limit <= 2 ? '#ff2d78' : limit <= 5 ? '#b44fff' : '#00f5ff';
@@ -717,7 +719,7 @@ function _updateStreakDisplay() {
   var el = document.getElementById('user-sim-streak');
   if (el) {
     var used = window._userSimCount || 0;
-    var limit = window._userSimLimit || 2;
+    var limit = window._userSimLimit || 3;
     var remaining = Math.max(0, limit - used);
     var planName = limit <= 2 ? 'FREE' : limit <= 5 ? 'STARTER' : 'PRO';
     el.innerHTML = _pixelBulb() + ' ' + remaining + ' DE ' + limit + ' SIMS · ' + planName;
@@ -734,15 +736,17 @@ function _updateMenuForUser() {
   var cadastrar = document.getElementById('hmenu-cadastrar');
   var sair = document.getElementById('hmenu-sair');
   var perfil = document.getElementById('hmenu-perfil');
-  var plans = document.getElementById('hmenu-plans');
   // Translate static labels
   if (entrar) entrar.textContent = lang==='pt'?'ENTRAR':'SIGN IN';
   if (cadastrar) cadastrar.textContent = lang==='pt'?'CADASTRAR':'SIGN UP';
-  if (plans) plans.innerHTML = lang==='pt'?'PLANOS &amp; PREÇOS':'PLANS &amp; PRICING';
   if (perfil) perfil.textContent = lang==='pt'?'MINHAS SIMULAÇÕES':'MY SIMULATIONS';
   if (sair) sair.textContent = lang==='pt'?'SAIR':'SIGN OUT';
   var skinsBtn = document.getElementById('hmenu-skins');
   if (skinsBtn) skinsBtn.textContent = '🚀 ' + (lang==='pt'?'SKINS':'SKINS');
+  var langPt = document.getElementById('hmenu-lang-pt');
+  var langEn = document.getElementById('hmenu-lang-en');
+  if (langPt) { langPt.style.color = lang==='pt'?'var(--cyan)':'var(--muted2)'; langPt.style.borderColor = lang==='pt'?'var(--cyan)':'transparent'; }
+  if (langEn) { langEn.style.color = lang==='en'?'var(--cyan)':'var(--muted2)'; langEn.style.borderColor = lang==='en'?'var(--cyan)':'transparent'; }
   if (_user) {
     if (entrar) entrar.style.display = 'none';
     if (cadastrar) cadastrar.style.display = 'none';
@@ -767,7 +771,8 @@ async function _saveSimulation() {
       title: state.title,
       score: state.analysis.score,
       score_label: state.analysis.scoreLabel,
-      analysis: state.analysis
+      analysis: state.analysis,
+      sources: state.sources || []
     });
   } catch(e) { console.log('Save sim error:', e); }
 }
@@ -786,17 +791,17 @@ var SKINS = [
   },
   { id:'viper', num:'03', name:'VIPER', type:'CAÇA ESPACIAL', color:'#ff6b00',
     desc: function(){ return lang==='pt'?'Laranja agressivo. Asas em flecha, 3 motores.':'Aggressive orange. Arrow wings, 3 engines.'; },
-    unlockDesc: function(){ return lang==='pt'?'Complete 5 simulações usando RPG pelo menos 2x':'Complete 5 simulations using RPG at least 2x'; }, unlockAt:5,
+    unlockDesc: function(){ return lang==='pt'?'5 simulações + usou Simulação pelo menos 2x':'5 simulations + used Simulation mode at least 2x'; }, unlockAt:5,
     svg: function(s){ s=s||72; return '<svg width="'+s+'" height="'+Math.round(s*0.7)+'" viewBox="0 0 20 14" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated"><rect x="9" y="0" width="2" height="1" fill="#ff6600"/><rect x="8" y="1" width="4" height="1" fill="#ff5500"/><rect x="7" y="2" width="6" height="1" fill="#ff4400"/><rect x="8" y="3" width="4" height="1" fill="#222200"/><rect x="7" y="4" width="6" height="2" fill="#111100"/><rect x="9" y="3" width="2" height="2" fill="#ff8800" opacity="0.6"/><rect x="5" y="4" width="3" height="1" fill="#ff4400"/><rect x="12" y="4" width="3" height="1" fill="#ff4400"/><rect x="3" y="5" width="4" height="1" fill="#cc3300"/><rect x="13" y="5" width="4" height="1" fill="#cc3300"/><rect x="1" y="6" width="5" height="1" fill="#aa2200"/><rect x="14" y="6" width="5" height="1" fill="#aa2200"/><rect x="0" y="7" width="4" height="1" fill="#882200"/><rect x="16" y="7" width="4" height="1" fill="#882200"/><rect x="7" y="6" width="6" height="1" fill="#ff4400"/><rect x="8" y="7" width="4" height="1" fill="#ff4400"/><rect x="8" y="8" width="4" height="1" fill="#cc3300"/><rect x="9" y="9" width="2" height="1" fill="#882200"/><rect x="8" y="10" width="1" height="2" fill="#ffcc00"/><rect x="11" y="10" width="1" height="2" fill="#ffcc00"/><rect x="2" y="9" width="2" height="3" fill="#ff8800"/><rect x="16" y="9" width="2" height="3" fill="#ff8800"/></svg>'; }
   },
   { id:'golden', num:'04', name:'GOLDEN', type:'FOGUETE DOURADO', color:'#FFE000',
     desc: function(){ return lang==='pt'?'Ouro puro com brilhos. Para quem chegou ao topo.':'Pure gold with sparkles. For those who reached the top.'; },
-    unlockDesc: function(){ return lang==='pt'?'Conquiste 1 score acima de 85':'Get 1 score above 85'; }, unlockAt:99,
+    unlockDesc: function(){ return lang==='pt'?'Compre 1 análise completa':'Buy 1 full analysis'; }, unlockAt:99,
     svg: function(s){ s=s||56; return '<svg width="'+s+'" height="'+Math.round(s*1.43)+'" viewBox="0 0 14 20" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated"><rect x="6" y="0" width="2" height="1" fill="#FFE000"/><rect x="5" y="1" width="4" height="1" fill="#FFD700"/><rect x="4" y="2" width="6" height="1" fill="#FFC500"/><rect x="4" y="3" width="6" height="1" fill="#FFB300"/><rect x="3" y="4" width="8" height="1" fill="#FFA500"/><rect x="3" y="5" width="8" height="1" fill="#1a1400"/><rect x="3" y="6" width="8" height="1" fill="#221a00"/><rect x="5" y="6" width="4" height="1" fill="#FFE000"/><rect x="4" y="7" width="6" height="2" fill="#cc9900"/><rect x="5" y="9" width="4" height="1" fill="#FFE000"/><rect x="5" y="7" width="1" height="1" fill="#ffffff"/><rect x="3" y="7" width="1" height="3" fill="#221a00"/><rect x="10" y="7" width="1" height="3" fill="#221a00"/><rect x="3" y="10" width="8" height="1" fill="#1a1400"/><rect x="3" y="11" width="8" height="1" fill="#221a00"/><rect x="3" y="12" width="8" height="1" fill="#1a1400"/><rect x="3" y="13" width="8" height="1" fill="#110e00"/><rect x="1" y="10" width="2" height="4" fill="#FFD700"/><rect x="11" y="10" width="2" height="4" fill="#FFD700"/><rect x="0" y="12" width="3" height="2" fill="#cc8800"/><rect x="11" y="12" width="3" height="2" fill="#cc8800"/><rect x="4" y="14" width="6" height="1" fill="#887700"/><rect x="5" y="15" width="4" height="1" fill="#665500"/><rect x="5" y="16" width="4" height="1" fill="#ffffff"/><rect x="4" y="17" width="6" height="1" fill="#FFE000"/><rect x="5" y="18" width="4" height="1" fill="#FFD700"/><rect x="6" y="19" width="2" height="1" fill="#ffffff"/><rect x="4" y="8" width="1" height="1" fill="#FFE000"/><rect x="9" y="11" width="1" height="1" fill="#FFE000"/></svg>'; }
   },
   { id:'phantom', num:'05', name:'PHANTOM', type:'STEALTH BOMBER', color:'#ff2d78',
     desc: function(){ return lang==='pt'?'Ultra flat, angular, quase invisível. Para exploradores dedicados.':'Ultra flat, angular, almost invisible. For dedicated explorers.'; },
-    unlockDesc: function(){ return lang==='pt'?'Complete 10 simulações — o verdadeiro explorador':'Complete 10 simulations — the true explorer'; }, unlockAt:10,
+    unlockDesc: function(){ return lang==='pt'?'10 simulações + 1 análise comprada':'10 simulations + 1 analysis purchased'; }, unlockAt:10,
     svg: function(s){ s=s||72; return '<svg width="'+s+'" height="'+Math.round(s*0.6)+'" viewBox="0 0 20 12" xmlns="http://www.w3.org/2000/svg" style="image-rendering:pixelated"><rect x="9" y="0" width="2" height="1" fill="#ff2d78"/><rect x="8" y="1" width="1" height="1" fill="#cc0044"/><rect x="11" y="1" width="1" height="1" fill="#cc0044"/><rect x="6" y="2" width="2" height="1" fill="#aa0033"/><rect x="12" y="2" width="2" height="1" fill="#aa0033"/><rect x="3" y="3" width="3" height="1" fill="#880022"/><rect x="14" y="3" width="3" height="1" fill="#880022"/><rect x="0" y="4" width="4" height="1" fill="#660011"/><rect x="16" y="4" width="4" height="1" fill="#660011"/><rect x="8" y="2" width="4" height="3" fill="#0a000f"/><rect x="7" y="3" width="6" height="2" fill="#0f0015"/><rect x="9" y="2" width="2" height="1" fill="#ff2d78" opacity="0.5"/><rect x="2" y="5" width="16" height="1" fill="#550011"/><rect x="4" y="6" width="12" height="1" fill="#440011"/><rect x="7" y="7" width="2" height="2" fill="#ff2d78"/><rect x="11" y="7" width="2" height="2" fill="#ff2d78"/><rect x="8" y="9" width="1" height="2" fill="#ff88aa"/><rect x="11" y="9" width="1" height="2" fill="#ff88aa"/></svg>'; }
   }
 ];
@@ -806,6 +811,7 @@ var _unlockedSkins = ['pioneer'];
 var _skinHighScore = 0;
 var _skinSimCount = 0;
 var _rpgCount = 0;
+var _skinAnalysisBought = 0;
 
 // Load from localStorage (fallback while not logged in)
 try {
@@ -815,6 +821,7 @@ try {
   _skinHighScore = _sd.highScore || 0;
   _skinSimCount = _sd.simCount || 0;
   _rpgCount = _sd.rpgCount || 0;
+  _skinAnalysisBought = _sd.analysisBought || 0;
 } catch(e) {}
 
 function _saveSkinData() {
@@ -822,7 +829,7 @@ function _saveSkinData() {
   try {
     localStorage.setItem('simly_skins', JSON.stringify({
       active: _activeSkin, unlocked: _unlockedSkins,
-      highScore: _skinHighScore, simCount: _skinSimCount, rpgCount: _rpgCount
+      highScore: _skinHighScore, simCount: _skinSimCount, rpgCount: _rpgCount, analysisBought: _skinAnalysisBought
     }));
   } catch(e) {}
   // Save to Supabase if logged in
@@ -832,7 +839,8 @@ function _saveSkinData() {
       skins_unlocked: _unlockedSkins,
       skin_sim_count: _skinSimCount,
       skin_high_score: _skinHighScore,
-      skin_rpg_count: _rpgCount
+      skin_rpg_count: _rpgCount,
+      skin_analysis_bought: _skinAnalysisBought
     }).eq('id', _user.id).then(function(){});
   }
 }
@@ -840,13 +848,14 @@ function _saveSkinData() {
 async function _loadSkinData() {
   if (!_user || !_sb) return;
   try {
-    var r = await _sb.from('profiles').select('skin_active,skins_unlocked,skin_sim_count,skin_high_score,skin_rpg_count').eq('id', _user.id).single();
+    var r = await _sb.from('profiles').select('skin_active,skins_unlocked,skin_sim_count,skin_high_score,skin_rpg_count,skin_analysis_bought').eq('id', _user.id).single();
     if (r.data) {
       _activeSkin = r.data.skin_active || 'pioneer';
       _unlockedSkins = r.data.skins_unlocked || ['pioneer'];
       _skinSimCount = r.data.skin_sim_count || 0;
       _skinHighScore = r.data.skin_high_score || 0;
       _rpgCount = r.data.skin_rpg_count || 0;
+      _skinAnalysisBought = r.data.skin_analysis_bought || 0;
       // Sync to localStorage
       try {
         localStorage.setItem('simly_skins', JSON.stringify({
@@ -870,8 +879,8 @@ function _checkSkinUnlocks() {
     var unlock = false;
     if (skin.id === 'saucer' && _skinSimCount >= 3) unlock = true;
     if (skin.id === 'viper' && _skinSimCount >= 5 && _rpgCount >= 2) unlock = true;
-    if (skin.id === 'golden' && _skinHighScore >= 85) unlock = true;
-    if (skin.id === 'phantom' && _skinSimCount >= 10) unlock = true;
+    if (skin.id === 'golden' && _skinAnalysisBought >= 1) unlock = true;
+    if (skin.id === 'phantom' && _skinSimCount >= 10 && _skinAnalysisBought >= 1) unlock = true;
     if (unlock) { _unlockedSkins.push(skin.id); newly.push(skin); }
   });
   _saveSkinData();
@@ -891,8 +900,8 @@ function _showSkinHint() {
   var pct = 0; var txt = '';
   if (next.id === 'saucer') { pct = Math.min(100, Math.round((_skinSimCount/3)*100)); txt = _skinSimCount + (lang==='pt'?' DE 3 SIMS':' OF 3 SIMS'); }
   if (next.id === 'viper')  { pct = Math.min(100, Math.round((_skinSimCount/5)*100)); txt = _skinSimCount + (lang==='pt'?' DE 5 SIMS':' OF 5 SIMS'); }
-  if (next.id === 'golden') { pct = Math.min(100, Math.round((_skinHighScore/85)*100)); txt = (lang==='pt'?'MELHOR SCORE: ':'BEST SCORE: ') + _skinHighScore + '/85'; }
-  if (next.id === 'phantom'){ pct = Math.min(100, Math.round((_skinSimCount/10)*100)); txt = _skinSimCount + (lang==='pt'?' DE 10 SIMS':' OF 10 SIMS'); }
+  if (next.id === 'golden') { pct = _skinAnalysisBought >= 1 ? 100 : 0; txt = _skinAnalysisBought >= 1 ? (lang==='pt'?'ANÁLISE COMPRADA':'ANALYSIS PURCHASED') : (lang==='pt'?'COMPRE 1 ANÁLISE COMPLETA':'BUY 1 FULL ANALYSIS'); }
+  if (next.id === 'phantom'){ pct = Math.min(100, Math.round((_skinSimCount/10)*100)); txt = _skinSimCount + (lang==='pt'?' DE 10 SIMS + 1 ANÁLISE':' OF 10 SIMS + 1 ANALYSIS'); }
   var el = document.getElementById('hintSprite');
   var nameEl = document.getElementById('hintName');
   var condEl = document.getElementById('hintCond');
@@ -974,7 +983,7 @@ var hist = [];
 var story = [];
 var chapNum = 0;
 var simCount = 0;
-var state = {spark:'', objective:'', outcome:'', title:'', analysis:null, theme:'negocio'};
+var state = {spark:'', objective:'', outcome:'', title:'', analysis:null, theme:'negocio', mode:'idea', sources:[]};
 try { simCount = parseInt(localStorage.getItem('simly_n') || '0'); } catch(e) {}
 
 // ── MOCK MODE ──
@@ -1028,16 +1037,16 @@ var TX = {
     steps: [
       {t:'A Ideia + Objetivo', d:'Descreva sua ideia e o que quer atingir.'},
       {t:'Hipotese', d:'A IA gera uma hipotese testavel. Aceite ou peca outra.'},
-      {t:'Simulacao RPG', d:'4 capitulos. Um protagonista usando sua solucao. Voce decide.'},
+      {t:'Simulação', d:'4 capítulos. Um protagonista usando sua solução. Você decide.'},
       {t:'Veredicto + Analise', d:'Score com dados reais. APROVADA ou DE VOLTA AO INICIO.'}
     ],
     stepss: [
       {t:'O Problema + O que Preciso', d:'Descreva o problema e o resultado que precisa.'},
       {t:'Solucao Potencial', d:'A IA gera uma solucao candidata. Aceite ou peca outra.'},
-      {t:'Simulacao RPG', d:'4 capitulos. Alguem usando a solucao. Voce decide.'},
+      {t:'Simulação', d:'4 capítulos. Alguém usando a solução. Você decide.'},
       {t:'Veredicto + Analise', d:'Score de viabilidade. SOLVED ou DEAD END.'}
     ],
-    rpgNote: 'O RPG e uma experiencia narrativa. O score e calculado de forma independente.',
+    rpgNote: 'A simulação é uma experiência narrativa. O score é calculado de forma independente.',
     ctaLabel: 'PRONTO PARA SIMULAR?',
     startBtn: 'PRESS START',
     sparkTitle: 'A IDEIA',
@@ -1074,10 +1083,11 @@ var TX = {
     reviewObjS: 'REVER NECESSIDADE',
     routeTitle: 'Como quer prosseguir?',
     routeFastTitle: 'VER SCORE DIRETO',
+    skipSim: 'PULAR SIMULAÇÃO',
     routeFastDesc: 'Pule a simulacao e va direto para o score com analise de mercado.',
     routeFastTime: '~15 segundos',
-    routeStoryTitle: 'JOGAR RPG PRIMEIRO',
-    routeStoryDesc: 'Vivencie sua ideia em 4 capitulos narrativos. Depois veja o score.',
+    routeStoryTitle: 'SIMULAÇÃO',
+    routeStoryDesc: 'Vivencie sua ideia em 4 capítulos narrativos. Depois veja o score.',
     routeStoryTime: '~2-3 minutos',
     searching: 'PESQUISANDO MERCADO...',
     calcScore: 'CALCULANDO SCORE...',
@@ -1094,7 +1104,7 @@ var TX = {
     fundedMsgS: 'A simulacao validou a solucao. O caminho esta mais claro.',
     drawingMsgS: 'A solucao tem limitacoes serias. Mas cada obstaculo aponta o que precisa mudar.',
     seeAnalysis: 'VER ANALISE COMPLETA',
-    replay: 'JOGAR RPG NOVAMENTE',
+    replay: 'SIMULAR NOVAMENTE',
     newSim: 'SIMULAR NOVA IDEIA',
     shareLabel: 'COMPARTILHAR VIA',
     waBtn: 'WHATSAPP',
@@ -1131,16 +1141,16 @@ TX.en = {
   steps: [
     {t:'The Spark + Objective', d:'Describe your idea and what you want to achieve.'},
     {t:'Hypothesis', d:'AI generates a testable hypothesis. Accept or ask for another.'},
-    {t:'RPG Simulation', d:'4 chapters. A protagonist using your solution. You decide.'},
+    {t:'Simulation', d:'4 chapters. A protagonist using your solution. You decide.'},
     {t:'Verdict + Analysis', d:'Score with real market data. FUNDED or DRAWING BOARD.'}
   ],
   stepss: [
     {t:'The Problem + What I Need', d:'Describe the problem and result you need.'},
     {t:'Potential Solution', d:'AI generates a candidate solution. Accept or ask for another.'},
-    {t:'RPG Simulation', d:'4 chapters. Someone using the solution. You decide.'},
+    {t:'Simulation', d:'4 chapters. Someone using the solution. You decide.'},
     {t:'Verdict + Analysis', d:'Viability score. SOLVED or DEAD END.'}
   ],
-  rpgNote: 'The RPG is a narrative experience. The score is calculated independently.',
+  rpgNote: 'The simulation is a narrative experience. The score is calculated independently.',
   ctaLabel: 'READY TO SIMULATE?',
   startBtn: 'PRESS START',
   sparkTitle: 'THE SPARK',
@@ -1177,9 +1187,10 @@ TX.en = {
   reviewObjS: 'REVIEW NEED',
   routeTitle: 'How do you want to proceed?',
   routeFastTitle: 'GET SCORE DIRECTLY',
+  skipSim: 'SKIP SIMULATION',
   routeFastDesc: 'Skip the simulation and go straight to the score with market analysis.',
   routeFastTime: '~15 seconds',
-  routeStoryTitle: 'PLAY RPG FIRST',
+  routeStoryTitle: 'SIMULATION',
   routeStoryDesc: 'Experience your idea in 4 narrative chapters. Then see the score.',
   routeStoryTime: '~2-3 minutes',
   searching: 'RESEARCHING MARKET...',
@@ -1197,7 +1208,7 @@ TX.en = {
   fundedMsgS: 'The simulation validated the solution. The path is clearer.',
   drawingMsgS: 'The solution has serious limitations. But every obstacle points to what needs to change.',
   seeAnalysis: 'SEE FULL ANALYSIS',
-  replay: 'REPLAY RPG',
+  replay: 'SIMULATE AGAIN',
   newSim: 'SIMULATE NEW IDEA',
   shareLabel: 'SHARE VIA',
   waBtn: 'WHATSAPP',
@@ -1220,7 +1231,7 @@ TX.en = {
 
 // ── HELPERS ──
 function t() { return TX[lang]; }
-function isSolve() { return false; }
+function isSolve() { return state.mode === 'solve'; }
 
 function prog(a) {
   for (var i = 0; i < 5; i++) {
@@ -1298,24 +1309,24 @@ function showIntro(a) {
     setTimeout(_updateStreakDisplay, 300);
   } else {
     var anonUsed = _getAnonSimCount();
-    var anonRemaining = Math.max(0, 2 - anonUsed);
-    streakHtml = '<div class="streak">' + _pixelBulb() + ' ' + anonRemaining + (lang==='pt'?' DE 2 SIMS DISPONÍVEIS':' OF 2 SIMS AVAILABLE') + '</div>';
+    var anonRemaining = Math.max(0, 3 - anonUsed);
+    streakHtml = '<div class="streak">' + _pixelBulb() + ' ' + anonRemaining + (lang==='pt'?' DE 3 SIMS DISPONÍVEIS':' OF 3 SIMS AVAILABLE') + '</div>';
   }
-  var stepList = tx.steps.map(function(s, i) {
+  var solve = state.mode === 'solve';
+  var stepList = (solve ? tx.stepss : tx.steps).map(function(s, i) {
     return '<div class="intro-step"><div class="intro-step-num">0' + (i+1) + '</div><div class="intro-step-text"><strong>' + s.t + '</strong><span>' + s.d + '</span></div></div>';
   }).join('');
-  var tl1 = tx.tagline1;
-  var desc = tx.introDesc;
+  var tl1 = solve ? tx.tagline1s : tx.tagline1;
+  var desc = solve ? tx.introDescs : tx.introDesc;
   a.innerHTML = '<div class="intro-screen">'
     + '<div class="intro-logo" onclick="resetAll()" style="cursor:pointer">SIMLY</div>'
     + '<div class="intro-sub">' + (lang==='pt'?'SIMULE ANTES DE CONSTRUIR':'SIMULATE BEFORE YOU BUILD') + '</div>'
     + '<div class="pixel-sprite-intro" style="filter:drop-shadow(0 0 10px rgba(0,245,255,0.3));">' + _getSkinSVG(56) + '</div>'
-    + '<div class="lang-toggle">'
-    + '<button class="lang-btn ' + (lang==='pt'?'active-pt':'inactive') + '" onclick="setLang(&apos;pt&apos;)">PT</button>'
-    + '<button class="lang-btn ' + (lang==='en'?'active-en':'inactive') + '" onclick="setLang(&apos;en&apos;)">EN</button>'
-    + '</div>'
     + streakHtml
-
+    + '<div style="display:flex;gap:8px;margin-bottom:20px;">'
+    + '<button onclick="setMode(\'idea\')" style="flex:1;font-family:var(--px);font-size:clamp(7px,2vw,9px);letter-spacing:0.08em;padding:18px 8px;border:2px solid;cursor:pointer;transition:all 0.2s;touch-action:manipulation;background:' + (state.mode==='idea'?'rgba(0,245,255,0.15)':'transparent') + ';border-color:' + (state.mode==='idea'?'var(--cyan)':'var(--border)') + ';color:' + (state.mode==='idea'?'var(--cyan)':'var(--muted2)') + ';">💡 ' + (lang==='pt'?'TENHO UMA IDEIA':'I HAVE AN IDEA') + '</button>'
+    + '<button onclick="setMode(\'solve\')" style="flex:1;font-family:var(--px);font-size:clamp(7px,2vw,9px);letter-spacing:0.08em;padding:18px 8px;border:2px solid;cursor:pointer;transition:all 0.2s;touch-action:manipulation;background:' + (state.mode==='solve'?'rgba(180,79,255,0.15)':'transparent') + ';border-color:' + (state.mode==='solve'?'var(--purple)':'var(--border)') + ';color:' + (state.mode==='solve'?'var(--purple)':'var(--muted2)') + ';">🔍 ' + (lang==='pt'?'TENHO UM PROBLEMA':'I HAVE A PROBLEM') + '</button>'
+    + '</div>'
     + '<div class="intro-tagline">' + tl1 + '<br><em>' + tx.taglineEmph + '</em> ' + tx.tagline2 + '</div>'
     + '<div class="intro-desc">' + desc + '</div>'
     + '<div class="intro-steps">' + stepList + '</div>'
@@ -1327,33 +1338,42 @@ function showIntro(a) {
 }
 
 function setLang(l) { lang = l; _updateMenuForUser(); showIntro(document.getElementById('app')); }
+function setMode(m) { state.mode = m; showIntro(document.getElementById('app')); }
 function _getAnonSimCount() {
-  try { return parseInt(localStorage.getItem('simly_anon_count') || '0'); } catch(e) { return 0; }
+  try {
+    var stored = JSON.parse(localStorage.getItem('simly_anon_daily') || '{}');
+    var today = new Date().toDateString();
+    if (stored.date !== today) return 0;
+    return stored.count || 0;
+  } catch(e) { return 0; }
 }
 function _incAnonSimCount() {
-  try { localStorage.setItem('simly_anon_count', String(_getAnonSimCount() + 1)); } catch(e) {}
+  try {
+    var today = new Date().toDateString();
+    var count = _getAnonSimCount();
+    localStorage.setItem('simly_anon_daily', JSON.stringify({date: today, count: count + 1}));
+  } catch(e) {}
 }
 
 function startFromIntro() {
   if (!_adminMode) {
     if (_user) {
       var used = window._userSimCount || 0;
-      var limit = window._userSimLimit || 2;
+      var limit = window._userSimLimit || 3;
       if (used >= limit) {
-        _showNoCreditsModal();
+        _showExtraSimsModal();
         return;
       }
     } else {
       var anonUsed = _getAnonSimCount();
-      var anonLimit = 2;
+      var anonLimit = 3;
       if (anonUsed >= anonLimit) {
         _showAnonLimitModal();
         return;
       }
     }
   }
-  phase = 'theme';
-  render();
+  if (isSolve()) { phase = 'spark'; render(); } else { phase = 'theme'; render(); }
 }
 
 function _showAnonLimitModal() {
@@ -1425,6 +1445,28 @@ function _openStripe(url) {
 function _closeNoCredits() {
   var m = document.getElementById('noCreditsModal');
   if (m) m.remove();
+}
+
+function _showExtraSimsModal() {
+  var modal = document.createElement('div');
+  modal.id = 'extraSimsModal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(7,7,20,0.92);display:flex;align-items:center;justify-content:center;padding:20px;';
+  modal.innerHTML = ''
+    + '<div style="background:var(--surface);border:2px solid var(--purple);max-width:320px;width:100%;overflow:hidden;">'
+    + '<div style="background:rgba(180,79,255,0.08);padding:20px;text-align:center;border-bottom:1px solid rgba(180,79,255,0.3);">'
+    + '<div style="font-size:28px;margin-bottom:8px">❤️</div>'
+    + '<div style="font-family:var(--px);font-size:9px;color:var(--purple);line-height:1.9;margin-bottom:4px">' + (lang==='pt'?'SIMS DO DIA ESGOTADAS':'DAILY SIMS USED UP') + '</div>'
+    + '<div style="font-size:13px;color:var(--muted2);line-height:1.6">' + (lang==='pt'?'Suas 3 simulações de hoje acabaram. Compre 3 sims extras — sem prazo de validade.':'Your 3 daily simulations are done. Get 3 extra sims — they never expire.') + '</div>'
+    + '</div>'
+    + '<div style="padding:20px;">'
+    + '<div style="font-family:var(--px);font-size:26px;color:var(--purple);text-align:center;margin-bottom:4px">R$9,90</div>'
+    + '<div style="font-family:var(--px);font-size:7px;color:var(--muted2);text-align:center;margin-bottom:14px;letter-spacing:0.1em">' + (lang==='pt'?'3 SIMS EXTRAS · SEM PRAZO':'3 EXTRA SIMS · NO EXPIRY') + '</div>'
+    + '<button onclick="_buyExtraSims();" style="width:100%;font-family:var(--px);font-size:9px;padding:16px;background:rgba(180,79,255,0.08);border:2px solid var(--purple);color:var(--purple);cursor:pointer;margin-bottom:8px;letter-spacing:0.06em;">'
+    + (lang==='pt'?'COMPRAR 3 SIMS EXTRAS':'BUY 3 EXTRA SIMS') + '</button>'
+    + '<button onclick="document.getElementById(&apos;extraSimsModal&apos;).remove();" style="width:100%;font-family:var(--px);font-size:7px;padding:10px;background:transparent;border:none;color:var(--muted);cursor:pointer;letter-spacing:0.08em;">'
+    + (lang==='pt'?'VOLTAR AMANHÃ':'COME BACK TOMORROW') + '</button>'
+    + '</div></div>';
+  document.body.appendChild(modal);
 }
 
 function _showNoCreditsModal() {
@@ -1615,12 +1657,12 @@ async function genOutcome(a) {
     var _tc = themeContext ? '\n' + themeContext : '';
     if (isSolve()) {
       prompt = lang === 'pt'
-        ? 'Com base neste problema e necessidade, gere uma solucao potencial clara (1-2 frases).\n\nProblema: ' + state.spark + '\nNecessidade: ' + state.objective + '\n' + altNote + '\n\nJSON sem backticks:\n{"outcome":"solucao em 1-2 frases","title":"nome da solucao em 3-5 palavras"}'
-        : 'Based on this problem and need, generate a clear potential solution (1-2 sentences).\n\nProblem: ' + state.spark + '\nNeed: ' + state.objective + '\n' + altNote + '\n\nJSON no backticks:\n{"outcome":"solution in 1-2 sentences","title":"solution name in 3-5 words"}';
+        ? 'Voce e um especialista em resolucao de problemas. Com base no problema e na necessidade abaixo, gere UMA hipotese de solucao concreta e testavel (1-2 frases). Seja especifico, pratico e direto ao ponto. Evite solucoes genericas.\n\nProblema: ' + state.spark + '\nO que precisa resolver: ' + state.objective + '\n' + altNote + '\n\nJSON sem backticks:\n{\"outcome\":\"hipotese de solucao em 1-2 frases\",\"title\":\"nome da solucao em 3-5 palavras\"}'
+        : 'You are a problem-solving expert. Based on the problem and need below, generate ONE concrete and testable solution hypothesis (1-2 sentences). Be specific, practical and direct. Avoid generic solutions.\n\nProblem: ' + state.spark + '\nWhat needs to be resolved: ' + state.objective + '\n' + altNote + '\n\nJSON no backticks:\n{\"outcome\":\"solution hypothesis in 1-2 sentences\",\"title\":\"solution name in 3-5 words\"}';
     } else {
       prompt = lang === 'pt'
-        ? 'Com base nesta ideia e objetivo, gere uma hipotese testavel (1-2 frases).\n\nSpark: ' + state.spark + '\nObjective: ' + state.objective + '\n' + altNote + '\n\nJSON sem backticks:\n{"outcome":"hipotese em 1-2 frases","title":"nome da ideia em 3-5 palavras"}'
-        : 'Based on this idea and objective, generate a testable hypothesis (1-2 sentences).\n\nSpark: ' + state.spark + '\nObjective: ' + state.objective + '\n' + altNote + '\n\nJSON no backticks:\n{"outcome":"hypothesis in 1-2 sentences","title":"idea name in 3-5 words"}';
+        ? 'Voce e um especialista em validacao de ideias e estrategia. Com base na ideia e objetivo abaixo, gere UMA hipotese testavel e especifica (1-2 frases). Conecte a ideia ao objetivo revelando o mecanismo central que tornaria isso bem-sucedido.' + _tc + '\n\nIdeia: ' + state.spark + '\nObjetivo: ' + state.objective + '\n' + altNote + '\n\nJSON sem backticks:\n{\"outcome\":\"hipotese com mecanismo claro em 1-2 frases\",\"title\":\"nome da ideia em 3-5 palavras\"}'
+        : 'You are a business strategy and idea validation expert. Based on the idea and objective below, generate ONE specific and testable hypothesis (1-2 sentences). Connect the idea to the objective by revealing the core mechanism that would make this successful.' + _tc + '\n\nIdea: ' + state.spark + '\nObjective: ' + state.objective + '\n' + altNote + '\n\nJSON no backticks:\n{\"outcome\":\"hypothesis with clear mechanism in 1-2 sentences\",\"title\":\"idea name in 3-5 words\"}';
     }
     var res = await api(prompt, 200);
     state.outcome = res.outcome; state.title = res.title;
@@ -1648,33 +1690,177 @@ async function genOutcome(a) {
 
 // ── ROUTE ──
 function showRoute() {
-  var a = document.getElementById('app');
-  var tx = t();
-  a.innerHTML = '<div class="card">'
-    + '<div class="card-header"><span class="badge cyan">' + (isSolve()?tx.hypBadgeS:tx.hypBadge) + '</span><span class="card-title">' + state.title + '</span></div>'
-    + '<div class="card-body">'
-    + '<div class="outcome-box" style="margin-bottom:20px">'
-    + '<div class="outcome-lbl">' + (isSolve()?tx.hypLabelS:tx.hypLabel) + '</div>'
-    + '<div class="outcome-text">"' + state.outcome + '"</div>'
-    + '</div>'
-    + '<div style="font-family:Share Tech Mono,monospace;font-size:9px;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted2);margin-bottom:12px">' + tx.routeTitle + '</div>'
-    + '<div class="route-choice">'
-    + '<button class="route-btn fast" onclick="goDirectScore()">'
-    + '<span class="route-icon">&#9889;</span>'
-    + '<div><div class="route-title">' + tx.routeFastTitle + '</div>'
-    + '<div class="route-desc">' + tx.routeFastDesc + '</div>'
-    + '<div class="route-time">' + tx.routeFastTime + '</div></div></button>'
-    + '<button class="route-btn story" onclick="startRPG()">'
-    + '<span class="route-icon">&#127918;</span>'
-    + '<div><div class="route-title">' + tx.routeStoryTitle + '</div>'
-    + '<div class="route-desc">' + tx.routeStoryDesc + '</div>'
-    + '<div class="route-time">' + tx.routeStoryTime + '</div></div></button>'
-    + '</div>'
-    + '<div style="margin-top:12px"><button class="btn btn-back" onclick="attempt=0;phase=&apos;outcome&apos;;render()">&lt; ' + tx.back + '</button></div>'
-    + '</div></div>';
+  // Auto-start simulation — no choice screen
+  startRPG();
 }
 
 function goDirectScore() { phase = 'verdict'; render(); }
+
+async function _checkAnalysisAccess() {
+  var a = document.getElementById('app');
+  // Show loading
+  a.innerHTML = '<div class="card"><div class="card-body" style="text-align:center;padding:40px 0">'
+    + '<div style="font-family:var(--px);font-size:8px;color:var(--cyan);letter-spacing:0.1em;animation:pulse16 1s infinite">'
+    + (lang==='pt'?'GERANDO ANÁLISE...':'GENERATING ANALYSIS...') + '</div>'
+    + '</div></div>';
+  try {
+    // Generate analysis if not already done
+    if (!state.analysis || !state.analysis.score) {
+      await _generateAnalysis();
+    }
+    // Wait 3 seconds then show paywall
+    await new Promise(function(r){ setTimeout(r, 3000); });
+    // Render dashboard behind paywall
+    phase = 'dashboard';
+    render();
+    // Show paywall on top
+    setTimeout(_showAnalysisPaywall, 100);
+  } catch(e) {
+    // Error — show retry
+    a.innerHTML = '<div class="card"><div class="card-body" style="text-align:center;padding:40px 20px">'
+      + '<div style="font-family:var(--px);font-size:8px;color:var(--pink);letter-spacing:0.1em;margin-bottom:20px">'
+      + (lang==='pt'?'ERRO AO GERAR ANÁLISE':'ERROR GENERATING ANALYSIS') + '</div>'
+      + '<button onclick="_checkAnalysisAccess()" style="font-family:var(--px);font-size:8px;padding:14px 20px;background:rgba(0,245,255,0.08);border:2px solid var(--cyan);color:var(--cyan);cursor:pointer;letter-spacing:0.08em">'
+      + (lang==='pt'?'TENTAR DE NOVO':'TRY AGAIN') + '</button>'
+      + '</div></div>';
+  }
+}
+
+async function _generateAnalysis() {
+  // Reuse the verdict generation logic
+  var marketData = '';
+  try {
+    var mRes = await fetch('/.netlify/functions/ai-search', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ prompt: lang==='pt'
+        ? 'Pesquise tamanho de mercado e tendencia de crescimento para esta ideia. 2-3 frases curtas.\n\nIdeia: ' + state.outcome
+        : 'Research market size and growth trend for this idea. 2-3 short sentences.\n\nIdea: ' + state.outcome
+      })
+    });
+    if (mRes.ok) { var mData = await mRes.json(); marketData = mData.result || ''; }
+  } catch(e) {}
+
+  var scorePrompt = lang==='pt'
+    ? 'Seja honesto e use o espectro completo de 0 a 100. Criterios:\n- 90-100: mercado grande e crescente, demanda comprovada, diferenciacao clara (RARO)\n- 70-89: mercado existe, demanda emergente, alguns obstaculos\n- 45-69: mercado pequeno ou incerto\n- 20-44: mercado fraco ou timing ruim\n- 0-19: mercado inexistente ou ideia inviavel\n\nSpark: ' + state.spark + '\nObjective: ' + state.objective + '\nHipotese: ' + state.outcome + '\nMercado: ' + marketData + '\n\nJSON sem backticks.\n{"score":0-100,"scoreLabel":"3-5 palavras","marketInsight":"1-2 frases","similarProjects":[{"name":"nome","description":"desc"}],"strengths":["s1","s2"],"risks":[{"risk":"risco","mitigation":"mit"}],"solutions":["c1","c2","c3"],"teamNeeded":true,"teamRoles":["r1","r2"]}'
+    : 'Be honest and use the full spectrum from 0 to 100. Criteria:\n- 90-100: large growing market, proven demand, clear differentiation (RARE)\n- 70-89: market exists, emerging demand, some obstacles\n- 45-69: small or uncertain market\n- 20-44: weak market or bad timing\n- 0-19: non-existent market or unviable idea\n\nSpark: ' + state.spark + '\nObjective: ' + state.objective + '\nHypothesis: ' + state.outcome + '\nMarket: ' + marketData + '\n\nJSON no backticks.\n{"score":0-100,"scoreLabel":"3-5 words","marketInsight":"1-2 sentences","similarProjects":[{"name":"name","description":"desc"}],"strengths":["s1","s2"],"risks":[{"risk":"risk","mitigation":"mit"}],"solutions":["p1","p2","p3"],"teamNeeded":true,"teamRoles":["r1","r2"]}';
+
+  var res = await fetch('/.netlify/functions/ai', {
+    method:'POST', headers:{'Content-Type':'application/json'},
+    body: JSON.stringify({ prompt: scorePrompt })
+  });
+  if (!res.ok) throw new Error('API error');
+  var data = await res.json();
+  var text = data.content.map(function(i){ return i.text||''; }).join('');
+  var clean = text.replace(/```json|```/g,'').trim();
+  var an = JSON.parse(clean);
+  // Score correction
+  if (!an.score || an.score === 72 || (an.score >= 60 && an.score <= 75)) {
+    var r2 = Math.random();
+    if (r2 < 0.15) an.score = 5 + Math.floor(Math.random()*20);
+    else if (r2 < 0.35) an.score = 25 + Math.floor(Math.random()*20);
+    else if (r2 < 0.65) an.score = 45 + Math.floor(Math.random()*25);
+    else if (r2 < 0.85) an.score = 70 + Math.floor(Math.random()*20);
+    else an.score = 90 + Math.floor(Math.random()*10);
+  }
+  state.analysis = an;
+}
+
+function _saveAndShowAnalysis() {
+  _saveSimulation();
+  _skinAnalysisBought++;
+  _saveSkinData();
+  _checkSkinUnlocks();
+  document.getElementById('analysisPayModal') && document.getElementById('analysisPayModal').remove();
+  _showToast(lang==='pt'?'✓ ANÁLISE DESBLOQUEADA':'✓ ANALYSIS UNLOCKED', 'var(--cyan)');
+}
+
+function _showAnalysisPaywall() {
+  var modal = document.createElement('div');
+  modal.id = 'analysisPayModal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(7,7,20,0.92);display:flex;align-items:center;justify-content:center;padding:20px;';
+  modal.innerHTML = ''
+    + '<div style="background:var(--surface);border:2px solid var(--cyan);max-width:360px;width:100%;overflow:hidden;">'
+    + '<div style="height:3px;background:linear-gradient(90deg,transparent,var(--cyan),transparent)"></div>'
+    + '<div style="padding:20px 20px 0;">'
+    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">'
+    + '<div>'
+    + '<div style="font-family:var(--px);font-size:7px;color:var(--muted2);letter-spacing:0.15em;margin-bottom:4px">' + (lang==='pt'?'SUA IDEIA FOI SIMULADA':'YOUR IDEA WAS SIMULATED') + '</div>'
+    + '<div style="font-family:var(--px);font-size:10px;color:var(--cyan);letter-spacing:0.08em">' + (lang==='pt'?'VER ANÁLISE COMPLETA':'SEE FULL ANALYSIS') + '</div>'
+    + '</div>'
+    + '<div style="text-align:right">'
+    + '<div style="font-size:26px;font-weight:900;font-family:Orbitron,monospace;color:var(--cyan);line-height:1">R$24,90</div>'
+    + '<div style="font-family:var(--px);font-size:6px;color:var(--muted2);margin-top:2px">' + (lang==='pt'?'pagamento único':'one-time') + '</div>'
+    + '</div>'
+    + '</div>'
+    + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px">'
+    + _apwFeat('📊', lang==='pt'?'Mercado real':'Real market')
+    + _apwFeat('💪', lang==='pt'?'Pontos fortes':'Strengths')
+    + _apwFeat('⚠️', lang==='pt'?'Riscos':'Risks')
+    + _apwFeat('🛤️', lang==='pt'?'Caminhos':'Paths')
+    + _apwFeat('👥', lang==='pt'?'Time sugerido':'Suggested team')
+    + _apwFeat('💾', lang==='pt'?'Histórico + PDF':'History + PDF')
+    + '</div>'
+    + '<button onclick="_buyAnalysis();" style="width:100%;font-family:var(--px);font-size:9px;padding:16px;background:rgba(0,245,255,0.08);border:2px solid var(--cyan);color:var(--cyan);cursor:pointer;margin-bottom:8px;letter-spacing:0.06em;">'
+    + (lang==='pt'?'DESBLOQUEAR ANÁLISE':'UNLOCK ANALYSIS') + '</button>'
+    + '<button onclick="document.getElementById(&apos;analysisPayModal&apos;).remove();" style="width:100%;font-family:var(--px);font-size:7px;padding:10px;background:transparent;border:none;color:var(--muted);cursor:pointer;letter-spacing:0.08em;margin-bottom:8px">'
+    + (lang==='pt'?'AGORA NÃO':'NOT NOW') + '</button>'
+    + '</div></div>';
+  document.body.appendChild(modal);
+}
+
+function _buyExtraSims() {
+  var m = document.getElementById('extraSimsModal');
+  if (!_user) {
+    if (m) m.remove();
+    _showLoginRequiredModal(function(){ _showExtraSimsModal(); });
+    return;
+  }
+  if (m) m.remove();
+  _openStripe('https://buy.stripe.com/cNi00ccp2eqCgiKg18abK01');
+}
+
+function _buyAnalysis() {
+  var m = document.getElementById('analysisPayModal');
+  if (!_user) {
+    if (m) m.remove();
+    _showLoginRequiredModal(function(){ _showAnalysisPaywall(); });
+    return;
+  }
+  if (m) m.remove();
+  _openStripe('https://buy.stripe.com/5kQ9AM60EgyK6IacOWabK02');
+  setTimeout(_saveAndShowAnalysis, 2000);
+}
+
+function _requireLoginForAnalysis() {
+  _showLoginRequiredModal(function(){ _showAnalysisPaywall(); });
+}
+
+function _showLoginRequiredModal(onLogin) {
+  var modal = document.createElement('div');
+  modal.id = 'loginRequiredModal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:1010;background:rgba(7,7,20,0.92);display:flex;align-items:center;justify-content:center;padding:20px;';
+  modal.innerHTML = ''
+    + '<div style="background:var(--surface);border:2px solid var(--cyan);max-width:320px;width:100%;overflow:hidden;">'
+    + '<div style="height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent)"></div>'
+    + '<div style="padding:24px 20px;text-align:center;">'
+    + '<div style="font-size:28px;margin-bottom:12px">🔐</div>'
+    + '<div style="font-family:var(--px);font-size:9px;color:var(--cyan);letter-spacing:0.12em;margin-bottom:8px">' + (lang==='pt'?'LOGIN NECESSÁRIO':'LOGIN REQUIRED') + '</div>'
+    + '<div style="font-size:13px;color:var(--muted2);line-height:1.7;margin-bottom:20px">' + (lang==='pt'?'Crie uma conta gratuita para continuar com a compra e guardar os seus créditos.':'Create a free account to continue with your purchase and keep your credits.') + '</div>'
+    + '<button onclick="document.getElementById(&apos;loginRequiredModal&apos;).remove();openLogin(&apos;up&apos;);" style="width:100%;font-family:var(--px);font-size:9px;padding:16px;background:rgba(0,245,255,0.08);border:2px solid var(--cyan);color:var(--cyan);cursor:pointer;margin-bottom:8px;letter-spacing:0.08em;">'
+    + (lang==='pt'?'CRIAR CONTA GRÁTIS':'CREATE FREE ACCOUNT') + '</button>'
+    + '<button onclick="document.getElementById(&apos;loginRequiredModal&apos;).remove();openLogin(&apos;in&apos;);" style="width:100%;font-family:var(--px);font-size:8px;padding:12px;background:transparent;border:1px solid var(--border);color:var(--muted2);cursor:pointer;letter-spacing:0.08em;margin-bottom:8px">'
+    + (lang==='pt'?'JÁ TENHO CONTA':'I ALREADY HAVE AN ACCOUNT') + '</button>'
+    + '<button onclick="document.getElementById(&apos;loginRequiredModal&apos;).remove();" style="width:100%;font-family:var(--px);font-size:7px;padding:8px;background:transparent;border:none;color:var(--muted);cursor:pointer;">'
+    + (lang==='pt'?'CANCELAR':'CANCEL') + '</button>'
+    + '</div></div>';
+  document.body.appendChild(modal);
+}
+
+function _apwFeat(icon, text) {
+  return '<div style="background:rgba(255,255,255,0.04);border:1px solid var(--border);padding:8px 10px;font-size:12px;color:var(--text)">' + icon + ' ' + text + '</div>';
+}
+
+
 function startRPG() {
   _rpgCount++; _saveSkinData(); phase = 'rpg'; hist = []; story = []; chapNum = 0; render(); }
 function replayRPG() { hist = []; story = []; chapNum = 0; phase = 'rpg'; render(); }
@@ -1713,10 +1899,17 @@ async function showRPG(a) {
       else if (chapNum===1) guide = lang==='pt' ? 'CONFLITO: CONTINUE A HISTORIA. O protagonista usa a solucao e encontra obstaculo real. 2 frases. 1 escolha.' : 'CONFLICT: CONTINUE THE STORY. Protagonist hits a real obstacle. 2 sentences. 1 choice.';
       else guide = lang==='pt' ? 'VIRADA: CONTINUE A HISTORIA. A escolha teve consequencias. Algo muda. 2 frases. 1 decisao final.' : 'TWIST: CONTINUE THE STORY. Choice had consequences. Something changes. 2 sentences. 1 final decision.';
     }
+    var rpgContext = isSolve()
+      ? (lang==='pt'
+        ? 'Problema real: ' + state.spark + '\nSolucao sendo testada: ' + state.outcome
+        : 'Real problem: ' + state.spark + '\nSolution being tested: ' + state.outcome)
+      : (lang==='pt'
+        ? 'Ideia: ' + state.spark + '\nHipotese em acao: ' + state.outcome
+        : 'Idea: ' + state.spark + '\nHypothesis in action: ' + state.outcome);
     var p = (lang==='pt'
-      ? 'Narre capitulo ' + (chapNum+1) + '/4. A solucao JA EXISTE no mundo. Mostre na vida real com sucessos e dificuldades.\n\nSolucao: '
-      : 'Narrate chapter ' + (chapNum+1) + '/4. Solution ALREADY EXISTS. Show in real life with successes and difficulties.\n\nSolution: ')
-      + state.outcome + '\n' + storyCtx + '\n' + histCtx + '\n\n' + guide
+      ? 'Voce e um narrador cinematografico. Narre capitulo ' + (chapNum+1) + '/4. A solucao JA EXISTE — simule o uso real com tensao genuina.\n\n' + rpgContext
+      : 'You are a cinematic narrator. Narrate chapter ' + (chapNum+1) + '/4. Solution ALREADY EXISTS — simulate real usage with genuine tension.\n\n' + rpgContext)
+      + '\n' + storyCtx + '\n' + histCtx + '\n\n' + guide
       + (lang==='pt'
         ? '\n\nMax 60 palavras na narrativa. Responda SEMPRE em portugues.\nJSON sem backticks:\n{"narrative":"2 frases","isFinal":' + isFS + ',"verdict":' + (isFinal?'"1 frase de veredicto"':'null') + ',"choices":' + choicesStr + '}'
         : '\n\nMax 60 words in narrative.\nJSON no backticks:\n{"narrative":"2 sentences","isFinal":' + isFS + ',"verdict":' + (isFinal?'"1 verdict sentence"':'null') + ',"choices":' + choicesStr + '}');
@@ -1760,9 +1953,13 @@ async function showVerdict(a) {
   a.innerHTML = '<div class="card"><div class="card-body">' + loading(tx.searching) + '</div></div>';
   var marketData = '';
   try {
-    var sp = lang === 'pt'
-      ? 'Pesquise tamanho de mercado e tendencia de crescimento para esta hipotese. 2-3 frases curtas.\n\nHipotese: ' + state.outcome
-      : 'Research market size and growth trend for this hypothesis. 2-3 short sentences.\n\nHypothesis: ' + state.outcome;
+    var sp = isSolve()
+      ? (lang === 'pt'
+        ? 'Pesquise contexto real sobre este problema: quantas pessoas/empresas enfrentam isso, quais solucoes existem hoje e suas limitacoes, tendencias de mercado relevantes. 2-3 frases com dados.\n\nProblema: ' + state.spark + '\nSolucao proposta: ' + state.outcome
+        : 'Research real context about this problem: how many people/companies face it, what solutions exist today and their limitations, relevant market trends. 2-3 sentences with data.\n\nProblem: ' + state.spark + '\nProposed solution: ' + state.outcome)
+      : (lang === 'pt'
+        ? 'Pesquise tamanho de mercado, tendencia de crescimento e players relevantes para esta ideia. 2-3 frases com dados concretos.\n\nIdeia: ' + state.outcome + '\nContexto: ' + (state.theme==='criativo'?'projeto criativo':state.theme==='impacto'?'impacto social':state.theme==='carreira'?'carreira profissional':'negocio')
+        : 'Research market size, growth trend and relevant players for this idea. 2-3 sentences with concrete data.\n\nIdea: ' + state.outcome + '\nContext: ' + (state.theme==='criativo'?'creative project':state.theme==='impacto'?'social impact':state.theme==='carreira'?'professional career':'business'));
     marketData = await apiSearch(sp, 400);
   } catch(e) { marketData = lang === 'pt' ? 'Dados nao disponiveis.' : 'Data not available.'; }
 
@@ -1772,11 +1969,11 @@ async function showVerdict(a) {
     var p;
     if (isSolve()) {
       p = lang === 'pt'
-        ? 'Avalie a viabilidade desta solucao. JSON sem backticks. No campo similarProjects, inclua apenas se houver produtos ou servicos diretamente comparaveis — caso contrario retorne array vazio.\n\nProblema: ' + state.spark + '\nNecessidade: ' + state.objective + '\nSolucao: ' + state.outcome + '\nContexto: ' + marketData + '\n\nSeja honesto e use o espectro completo de 0 a 100. Criterios:\n- 90-100: solucao excepcional, demanda clara, timing perfeito (RARO - use apenas se realmente justificado)\n- 70-89: boa solucao com obstaculos gerenciaveis\n- 45-69: solucao parcial ou mercado incerto\n- 20-44: solucao fraca ou timing ruim\n- 0-19: solucao nao resolve ou mercado inexistente\n\n{"score":0-100,"scoreLabel":"3-5 palavras","marketInsight":"1-2 frases sobre contexto","similarProjects":[{"name":"nome do produto","description":"o que faz e como se relaciona"}],"strengths":["s1","s2"],"risks":[{"risk":"limitacao","mitigation":"como superar"}],"solutions":["variacao 1","variacao 2","variacao 3"],"teamNeeded":true,"teamRoles":["papel 1","papel 2"]}. Se nao precisar de equipe retorne teamNeeded:false e teamRoles:[].'
+        ? 'Voce e um especialista em resolucao de problemas e inovacao. Avalie com rigor a viabilidade desta hipotese de solucao. Seja honesto. JSON sem backticks. No campo similarProjects inclua apenas solucoes existentes diretamente comparaveis, senao array vazio.\n\nProblema: ' + state.spark + '\nO que precisa resolver: ' + state.objective + '\nHipotese de solucao: ' + state.outcome + '\nContexto: ' + marketData + '\n\nCriterios:\n- 90-100: solucao excecional, unica, escalavel, demanda comprovada (RARO)\n- 70-89: resolve bem com obstaculos gerenciaveis\n- 45-69: resolve parcialmente ou tem limitacoes\n- 20-44: nao resolve bem ou ha alternativas melhores\n- 0-19: nao resolve ou e inviavel\n\n{"score":0-100,"scoreLabel":"3-5 palavras","marketInsight":"1-2 frases sobre contexto do problema","similarProjects":[{"name":"solucao existente","description":"como resolve e diferenca"}],"strengths":["ponto forte 1","ponto forte 2"],"risks":[{"risk":"limitacao concreta","mitigation":"como superar"}],"solutions":["variacao 1","variacao 2","variacao 3"],"teamNeeded":true,"teamRoles":["papel 1","papel 2"]}. Se nao precisar de equipe retorne teamNeeded:false e teamRoles:[].'
         : 'Evaluate the viability of this solution. JSON no backticks. In the similarProjects field, only include entries if there are directly comparable products or services — otherwise return empty array.\n\nProblem: ' + state.spark + '\nNeed: ' + state.objective + '\nSolution: ' + state.outcome + '\nContext: ' + marketData + '\n\nBe honest and use the full spectrum from 0 to 100. Criteria:\n- 90-100: exceptional solution, clear demand, perfect timing (RARE - only if truly justified)\n- 70-89: good solution with manageable obstacles\n- 45-69: partial solution or uncertain market\n- 20-44: weak solution or bad timing\n- 0-19: does not resolve or market does not exist\n\n{"score":0-100,"scoreLabel":"3-5 words","marketInsight":"1-2 sentences about context","similarProjects":[{"name":"product name","description":"what it does and how it relates"}],"strengths":["s1","s2"],"risks":[{"risk":"limitation","mitigation":"how to overcome"}],"solutions":["variation 1","variation 2","variation 3"],"teamNeeded":true,"teamRoles":["role 1","role 2"]}. If no team needed return teamNeeded:false and teamRoles:[].';
     } else {
       p = lang === 'pt'
-        ? 'Analise o potencial desta ideia. Contexto: ' + (state.theme==='criativo'?'projeto criativo (arte, música, conteúdo, marca pessoal)':state.theme==='impacto'?'impacto social (ONG, causa, comunidade)':state.theme==='carreira'?'carreira e posicionamento profissional':'negócio e empreendedorismo') + '. JSON sem backticks. No campo similarProjects, inclua apenas se houver produtos ou servicos diretamente comparaveis — caso contrario retorne array vazio.\n\nSpark: ' + state.spark + '\nObjective: ' + state.objective + '\nHipotese: ' + state.outcome + '\nMercado: ' + marketData + '\n\nSeja honesto e use o espectro completo de 0 a 100. Criterios:\n- 90-100: mercado grande e crescente, demanda comprovada, diferenciacao clara (RARO - use apenas se realmente justificado)\n- 70-89: mercado existe, demanda emergente, alguns obstaculos\n- 45-69: mercado pequeno ou incerto\n- 20-44: mercado fraco ou timing ruim\n- 0-19: mercado inexistente ou ideia inviavel\n\n{"score":0-100,"scoreLabel":"3-5 palavras","marketInsight":"1-2 frases com dados de mercado","similarProjects":[{"name":"nome do produto","description":"o que faz e como se relaciona"}],"strengths":["s1","s2"],"risks":[{"risk":"risco","mitigation":"mitigacao"}],"solutions":["caminho 1","caminho 2","caminho 3"],"teamNeeded":true,"teamRoles":["papel 1","papel 2"]}. Se nao precisar de equipe retorne teamNeeded:false e teamRoles:[].'
+        ? 'Voce e um especialista em estrategia e validacao de ideias. Analise com rigor o potencial desta ideia. Contexto: ' + (state.theme==="criativo"?'projeto criativo':state.theme==="impacto"?'impacto social':state.theme==="carreira"?'carreira profissional':'negocio') + '. Seja honesto. JSON sem backticks. No campo similarProjects inclua apenas competidores diretos reais, senao array vazio.\n\nIdeia: ' + state.spark + '\nObjetivo: ' + state.objective + '\nHipotese testavel: ' + state.outcome + '\nDados de mercado: ' + marketData + '\n\nCriterios:\n- 90-100: mercado grande, demanda comprovada, diferenciacao genuina e timing perfeito (RARO)\n- 70-89: mercado com demanda emergente, hipotese solida, obstaculos gerenciaveis\n- 45-69: mercado pequeno ou hipotese com gaps\n- 20-44: concorrencia forte, mercado fraco ou timing ruim\n- 0-19: mercado inexistente ou ideia inviavel\n\n{"score":0-100,"scoreLabel":"3-5 palavras","marketInsight":"1-2 frases com dados concretos","similarProjects":[{"name":"competidor","description":"o que faz e diferenca"}],"strengths":["diferencial 1","diferencial 2"],"risks":[{"risk":"risco especifico","mitigation":"acao concreta"}],"solutions":["caminho 1","caminho 2","caminho 3"],"teamNeeded":true,"teamRoles":["papel 1","papel 2"]}. Se nao precisar de equipe retorne teamNeeded:false e teamRoles:[].'
         : 'Analyze the potential of this idea. Context: ' + (state.theme==='criativo'?'creative project (art, music, content, personal brand)':state.theme==='impacto'?'social impact (NGO, cause, community)':state.theme==='carreira'?'career and professional positioning':'business and entrepreneurship') + '. JSON no backticks. In the similarProjects field, only include entries if there are directly comparable products or services — otherwise return empty array.\n\nSpark: ' + state.spark + '\nObjective: ' + state.objective + '\nHypothesis: ' + state.outcome + '\nMarket: ' + marketData + '\n\nBe honest and use the full spectrum from 0 to 100. Criteria:\n- 90-100: large growing market, proven demand, clear differentiation (RARE - only if truly justified)\n- 70-89: market exists, emerging demand, some obstacles\n- 45-69: small or uncertain market\n- 20-44: weak market or bad timing\n- 0-19: non-existent market or unviable idea\n\n{"score":0-100,"scoreLabel":"3-5 words","marketInsight":"1-2 sentences with market data","similarProjects":[{"name":"product name","description":"what it does and how it relates"}],"strengths":["s1","s2"],"risks":[{"risk":"risk","mitigation":"mitigation"}],"solutions":["path 1","path 2","path 3"],"teamNeeded":true,"teamRoles":["role 1","role 2"]}. If no team needed return teamNeeded:false and teamRoles:[].';
     }
     var an = await api(p, 600);
@@ -1836,7 +2033,9 @@ async function showVerdict(a) {
       + '<div class="verdict-score">' + an.score + '/100 &middot; ' + an.scoreLabel + '</div>'
       + '<div class="verdict-msg">' + msg + '</div>'
       + '</div>'
-      + '<div class="btn-row one"><button class="btn btn-cyan" onclick="phase=&apos;dashboard&apos;;render()">&gt; ' + tx.seeAnalysis + '</button></div>'
+      + '<div class="btn-row one">'
+      + '<button class="btn btn-cyan" onclick="' + (_user ? '_checkAnalysisAccess()' : '_requireLoginForAnalysis()') + '">&gt; ' + tx.seeAnalysis + '</button>'
+      + '</div>'
       + '<div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">'
       + '<button class="btn btn-ghost" onclick="replayRPG()">&#8635; ' + tx.replay + '</button>'
       + '<button class="btn btn-ghost" onclick="resetAll()">&#8635; ' + tx.newSim + '</button>'
@@ -1907,6 +2106,15 @@ function showDashboard(a) {
         + '</div>'
       : '')
     + '</div>'
+    + (state.sources && state.sources.length ? '<div class="dash-sec" style="background:#070714;">'
+      + '<div class="dash-sec-lbl">' + (lang==='pt'?'FONTES PESQUISADAS':'RESEARCH SOURCES') + '</div>'
+      + state.sources.slice(0,5).map(function(s){
+          return '<div style="display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid rgba(255,255,255,0.04);">'
+            + '<div style="width:6px;height:6px;background:var(--cyan);flex-shrink:0;margin-top:5px;"></div>'
+            + '<a href="' + s.url + '" target="_blank" rel="noopener" style="font-size:12px;color:var(--cyan);text-decoration:none;line-height:1.5;opacity:0.8;">' + s.title + '</a>'
+            + '</div>';
+        }).join('')
+      + '</div>' : '')
     + '<div class="disclaimer"><p>' + tx.disclaimer + '</p></div>'
     + '<div class="share-area">'
     + '<div class="share-lbl">' + tx.shareLabel + '</div>'
@@ -1914,19 +2122,10 @@ function showDashboard(a) {
     + '<button class="btn-wa" onclick="shareWA()"><span style="font-size:20px">&#128172;</span> ' + tx.waBtn + '</button>'
     + '<button class="btn-copy" onclick="copyLink()"><span style="font-size:16px">&#128279;</span>' + tx.copyBtn + '</button>'
     + '</div><div id="copied"></div></div>'
-    + (_user && (window._userSimLimit || 0) > 2
-      ? '<div style="padding:12px 20px;border-top:1px solid var(--border)">'
-        + '<div style="display:flex;gap:10px;margin-bottom:8px">'
-        + '<button class="btn btn-ghost" style="flex:1" onclick="_discardSim()">✕ ' + (lang==='pt'?'DESCARTAR':'DISCARD') + '</button>'
-        + '<button class="btn btn-cyan" style="flex:2" onclick="_saveSim()">&#128190; ' + (lang==='pt'?'SALVAR':'SAVE') + '</button>'
-        + '</div>'
-        + '<button class="btn btn-ghost" style="width:100%" onclick="exportPDF()"><span style="font-size:14px">&#128196;</span> PDF</button>'
-        + '</div>'
-      : '<div style="padding:12px 20px;border-top:1px solid var(--border)">'
-        + '<button onclick="openPricing()" style="width:100%;font-family:var(--px);font-size:8px;padding:14px;background:rgba(180,79,255,0.08);border:2px solid var(--purple);color:var(--purple);cursor:pointer;letter-spacing:0.08em;line-height:1.8">'
-        + _pixelBulb() + ' ' + (lang==='pt'?'SALVAR ESTA SIMULAÇÃO\nATUALIZE SEU PLANO':'SAVE THIS SIMULATION\nUPGRADE YOUR PLAN')
-        + '</button></div>'
-    )
+    + '<div style="padding:12px 20px;border-top:1px solid var(--border)">'
+      + '<button onclick="_saveAndShowAnalysis()" style="width:100%;font-family:var(--px);font-size:8px;padding:16px;background:rgba(0,245,255,0.08);border:2px solid var(--cyan);color:var(--cyan);cursor:pointer;letter-spacing:0.08em;line-height:1.8">'
+      + '&#128190; ' + (lang==='pt'?'SALVAR SIMULAÇÃO':'SAVE SIMULATION')
+      + '</button></div>'
     + '<div style="padding:16px 20px;border-top:1px solid var(--border);background:rgba(180,79,255,0.04)">'
     + '<div style="font-family:Share Tech Mono,monospace;font-size:9px;letter-spacing:0.15em;text-transform:uppercase;color:var(--purple);margin-bottom:10px;text-align:center">'
     + (lang==='pt' ? '💜 GOSTOU DO SIMLY?' : '💜 ENJOYING SIMLY?') + '</div>'
@@ -2074,10 +2273,34 @@ async function apiSearch(prompt, maxTokens) {
   var res = await fetch('/.netlify/functions/ai-search', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:maxTokens, messages:[{role:'user',content:prompt}]})
+    body: JSON.stringify({
+      model:'claude-sonnet-4-20250514', max_tokens:maxTokens,
+      tools:[{"type":"web_search_20250305","name":"web_search"}],
+      messages:[{role:'user',content:prompt}]
+    })
   });
   var d = await res.json();
   if (!d.content || !d.content[0]) throw new Error('empty');
+  // Extract sources from web_search_tool_result blocks
+  var sources = [];
+  d.content.forEach(function(b) {
+    if (b.type === 'tool_result' || b.type === 'web_search_tool_result') {
+      var items = b.content || [];
+      items.forEach(function(item) {
+        if (item.type === 'web_search_result' && item.url && item.title) {
+          var already = sources.some(function(s){ return s.url === item.url; });
+          if (!already) sources.push({ title: item.title, url: item.url });
+        }
+      });
+    }
+  });
+  if (sources.length) {
+    if (!state.sources) state.sources = [];
+    sources.forEach(function(s) {
+      var already = state.sources.some(function(x){ return x.url === s.url; });
+      if (!already) state.sources.push(s);
+    });
+  }
   var blocks = d.content.filter(function(b){ return b.type==='text'; });
   if (!blocks.length) throw new Error('no text');
   return blocks[blocks.length-1].text.trim();
@@ -2098,7 +2321,7 @@ function errScreen(a, msg, retry, back) {
 
 function resetAll() {
   state.theme = '';
-  state = {spark:'', objective:'', outcome:'', title:'', analysis:null};
+  state = {spark:'', objective:'', outcome:'', title:'', analysis:null, mode:'idea', theme:'negocio', sources:[]};
   phase = 'intro'; hist = []; story = []; chapNum = 0; attempt = 0; mode = 'idea';
   _resetPaid();
   render();
@@ -2249,7 +2472,7 @@ function openPricing() {
     + '<button onclick="closePricing()" style="font-family:Share Tech Mono,monospace;font-size:18px;color:var(--muted);background:transparent;border:none;cursor:pointer;padding:4px 8px">✕</button>'
     + '</div>'
     + '<p style="font-size:13px;color:var(--muted2);margin-bottom:20px;line-height:1.6">' + (lang==='pt'?'Simule suas ideias antes de investir tempo ou dinheiro.':'Simulate your ideas before investing time or money.') + '</p>'
-    + '<div class="plan plan-free"><div class="plan-name">FREE</div><div class="plan-price"><span class="plan-val">R$0</span><span class="plan-period">' + (lang==='pt'?'/ sempre':'/ always') + '</span></div><div class="plan-feats"><div class="plan-feat on">' + (lang==='pt'?'2 simulações para experimentar':'2 simulations to try') + '</div><div class="plan-feat on">' + (lang==='pt'?'Experiência completa':'Full experience') + '</div><div class="plan-feat on">Score, ' + (lang==='pt'?'análise':'analysis') + ', ' + (lang==='pt'?'riscos':'risks') + ' e PDF</div></div><button class="plan-btn" onclick="closePricing()">' + (lang==='pt'?'PLANO ATUAL':'CURRENT PLAN') + '</button></div>'
+    + '<div class="plan plan-free"><div class="plan-name">FREE</div><div class="plan-price"><span class="plan-val">R$0</span><span class="plan-period">' + (lang==='pt'?'/ sempre':'/ always') + '</span></div><div class="plan-feats"><div class="plan-feat on">' + (lang==='pt'?'3 simulações por dia, grátis':'3 simulations per day, free') + '</div><div class="plan-feat on">' + (lang==='pt'?'Experiência completa':'Full experience') + '</div><div class="plan-feat on">Score, ' + (lang==='pt'?'análise':'analysis') + ', ' + (lang==='pt'?'riscos':'risks') + ' e PDF</div></div><button class="plan-btn" onclick="closePricing()">' + (lang==='pt'?'PLANO ATUAL':'CURRENT PLAN') + '</button></div>'
     + '<div class="plan plan-starter popular"><div class="plan-badge">POPULAR</div><div class="plan-name">PACK STARTER</div><div class="plan-price"><span class="plan-val">R$9,90</span><span class="plan-period">/ pack</span></div><div class="plan-feats"><div class="plan-feat on">' + (lang==='pt'?'5 simulações completas':'5 complete simulations') + '</div><div class="plan-feat on">' + (lang==='pt'?'Experiência completa':'Full experience') + '</div><div class="plan-feat on">Score, ' + (lang==='pt'?'análise':'analysis') + ' & PDF</div><div class="plan-feat on">' + (lang==='pt'?'Créditos sem prazo de validade':'Credits never expire') + '</div></div><button class="plan-btn" onclick="closePricing();_openStripe(&apos;https://buy.stripe.com/cNi00ccp2eqCgiKg18abK01&apos;);">' + (lang==='pt'?'COMPRAR STARTER':'BUY STARTER') + '</button><div class="plan-note">' + (lang==='pt'?'~R$1,98 por simulação':'~R$1,98/sim · Price in BRL · Auto-converted at checkout') + '</div></div>'
     + '<div class="plan plan-pro"><div class="plan-name">PACK PRO</div><div class="plan-price"><span class="plan-val">R$24,90</span><span class="plan-period">/ pack</span></div><div class="plan-feats"><div class="plan-feat on">' + (lang==='pt'?'15 simulações completas':'15 complete simulations') + '</div><div class="plan-feat on">' + (lang==='pt'?'Experiência completa':'Full experience') + '</div><div class="plan-feat on">Score, ' + (lang==='pt'?'análise':'analysis') + ' & PDF</div><div class="plan-feat on">' + (lang==='pt'?'Créditos sem prazo de validade':'Credits never expire') + '</div></div><button class="plan-btn" onclick="closePricing();_openStripe(&apos;https://buy.stripe.com/5kQ9AM60EgyK6IacOWabK02&apos;);">' + (lang==='pt'?'COMPRAR PRO':'BUY PRO') + '</button><div class="plan-note">' + (lang==='pt'?'~R$1,66 por simulação':'~R$1,66/sim · Price in BRL · Auto-converted at checkout') + '</div></div>';
     overlay.style.display = 'block';
@@ -2411,7 +2634,7 @@ async function openMySims() {
         + '<div style="display:flex;justify-content:space-between;align-items:center;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">'
         + '<div style="font-family:Share Tech Mono,monospace;font-size:11px;color:var(--muted2);letter-spacing:0.1em">'+(lang==='pt'?'VER ANÁLISE →':'VIEW ANALYSIS →')+'</div>'
         + '<div style="display:flex;gap:6px;">'
-        + ((window._userSimLimit || 2) > 2 ? '<button onclick="event.stopPropagation();_exportSimPDF(' + idx + ')" style="font-family:Share Tech Mono,monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--cyan);background:transparent;border:1px solid rgba(0,245,255,0.3);padding:6px 12px;cursor:pointer;">PDF</button>' : '')
+        + ((window._userSimLimit || 3) > 2 ? '<button onclick="event.stopPropagation();_exportSimPDF(' + idx + ')" style="font-family:Share Tech Mono,monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--cyan);background:transparent;border:1px solid rgba(0,245,255,0.3);padding:6px 12px;cursor:pointer;">PDF</button>' : '')
         + '<button onclick="event.stopPropagation();_confirmDelete(&apos;' + s.id + '&apos;)" style="font-family:Share Tech Mono,monospace;font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--pink);background:transparent;border:1px solid rgba(255,45,120,0.3);padding:6px 12px;cursor:pointer;">'+(lang==='pt'?'DELETAR':'DELETE')+'</button>'
         + '</div>'
         + '</div>'
@@ -2484,6 +2707,7 @@ function _openSimDetail(idx) {
   state.title = s.title || '';
   state.spark = s.spark || '';
   state.objective = s.objective || '';
+  state.sources = s.sources || [];
   closeMySims();
   phase = 'dashboard';
   render();
