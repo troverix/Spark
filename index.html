@@ -2333,7 +2333,7 @@ function resetAll() {
 
 // Print styles
 var printStyle = document.createElement('style');
-printStyle.textContent = '@media print{body{background:#070714!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}body::before,body::after{display:none!important;}.container{display:none!important;}#pdfDiv{display:block!important;}@page{margin:15mm;size:A4;}}';
+printStyle.textContent = '@media print{body{background:#070714!important;-webkit-print-color-adjust:exact!important;print-color-adjust:exact!important;}body>*{display:none!important;}body::before,body::after{display:none!important;}#pdfDiv{display:block!important;}@page{margin:15mm;size:A4;}}';
 document.head.appendChild(printStyle);
 
 var pdfDiv = document.createElement('div');
@@ -2693,13 +2693,19 @@ function _exportSimPDF(idx) {
   var prevSpark = state.spark;
   var prevObjective = state.objective;
   var prevStory = window._story;
+  // Load sim data into state
   state.analysis = typeof s.analysis === 'string' ? JSON.parse(s.analysis) : s.analysis;
   state.outcome = s.outcome || '';
   state.title = s.title || '';
   state.spark = s.spark || '';
   state.objective = s.objective || '';
   window._story = [];
+  // Hide overlay before printing
+  var overlay = document.getElementById('mysimsOverlay');
+  var overlayWasOpen = overlay && overlay.style.display !== 'none';
+  if (overlayWasOpen) overlay.style.display = 'none';
   exportPDF();
+  // Restore everything after print
   var restore = function() {
     state.analysis = prevAnalysis;
     state.outcome = prevOutcome;
@@ -2707,6 +2713,7 @@ function _exportSimPDF(idx) {
     state.spark = prevSpark;
     state.objective = prevObjective;
     window._story = prevStory;
+    if (overlayWasOpen && overlay) overlay.style.display = 'block';
   };
   window.addEventListener('focus', restore, { once: true });
   setTimeout(restore, 3000);
