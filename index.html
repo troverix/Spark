@@ -850,6 +850,24 @@ async function _loadSkinData() {
   try {
     var r = await _sb.from('profiles').select('skin_active,skins_unlocked,skin_sim_count,skin_high_score,skin_rpg_count,skin_analysis_bought').eq('id', _user.id).single();
     if (r.data) {
+      var dbEmpty = (!r.data.skins_unlocked || r.data.skins_unlocked.length <= 1) && !r.data.skin_sim_count;
+      if (dbEmpty) {
+        // Supabase is empty — migrate from localStorage
+        var local = {};
+        try { local = JSON.parse(localStorage.getItem('simly_skins') || '{}'); } catch(e) {}
+        if (local.unlocked && local.unlocked.length > 1) {
+          _activeSkin = local.active || 'pioneer';
+          _unlockedSkins = local.unlocked || ['pioneer'];
+          _skinSimCount = local.simCount || 0;
+          _skinHighScore = local.highScore || 0;
+          _rpgCount = local.rpgCount || 0;
+          _skinAnalysisBought = local.analysisBought || 0;
+          // Push migrated data to Supabase
+          _saveSkinData();
+          return;
+        }
+      }
+      // Load from Supabase normally
       _activeSkin = r.data.skin_active || 'pioneer';
       _unlockedSkins = r.data.skins_unlocked || ['pioneer'];
       _skinSimCount = r.data.skin_sim_count || 0;
@@ -860,7 +878,8 @@ async function _loadSkinData() {
       try {
         localStorage.setItem('simly_skins', JSON.stringify({
           active: _activeSkin, unlocked: _unlockedSkins,
-          highScore: _skinHighScore, simCount: _skinSimCount, rpgCount: _rpgCount
+          highScore: _skinHighScore, simCount: _skinSimCount, rpgCount: _rpgCount,
+          analysisBought: _skinAnalysisBought
         }));
       } catch(e) {}
     }
