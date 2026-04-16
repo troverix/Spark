@@ -640,7 +640,7 @@ async function _loadUserSimCount() {
       .eq('user_id', _user.id)
       .gte('created_at', startOfDay.toISOString());
     window._userSimCount = r.count || 0;
-    window._userSimLimit = 3; // 3 free sims per day
+    window._userSimLimit = 2; // 3 free sims per day
     _updateStreakDisplay();
     _renderHud();
   } catch(e) { window._userSimCount = 0; }
@@ -1276,8 +1276,6 @@ function render() {
   var a = document.getElementById('app');
   _updateMenuForUser();
   if (phase === 'intro') { hideUI(true); showIntro(a); return; }
-  if (phase === 'theme') { hideUI(true); showTheme(a); return; }
-  if (phase === 'theme') { hideUI(true); showTheme(a); return; }
   hideUI(false);
   var idx = ['spark','objective','outcome','rpg','verdict','dashboard'].indexOf(phase);
   prog(idx < 0 ? 0 : idx);
@@ -1328,8 +1326,8 @@ function showIntro(a) {
     setTimeout(_updateStreakDisplay, 300);
   } else {
     var anonUsed = _getAnonSimCount();
-    var anonRemaining = Math.max(0, 3 - anonUsed);
-    streakHtml = '<div class="streak">' + _pixelBulb() + ' ' + anonRemaining + (lang==='pt'?' DE 3 SIMS DISPONÍVEIS':' OF 3 SIMS AVAILABLE') + '</div>';
+    var anonRemaining = Math.max(0, 2 - anonUsed);
+    streakHtml = '<div class="streak">' + _pixelBulb() + ' ' + anonRemaining + (lang==='pt'?' DE 2 SIMS DISPONÍVEIS':' OF 2 SIMS AVAILABLE') + '</div>';
   }
   var solve = false;
   var stepList = tx.steps.map(function(s, i) {
@@ -1384,14 +1382,14 @@ function startFromIntro() {
       }
     } else {
       var anonUsed = _getAnonSimCount();
-      var anonLimit = 3;
+      var anonLimit = 2;
       if (anonUsed >= anonLimit) {
         _showAnonLimitModal();
         return;
       }
     }
   }
-  phase = 'theme'; render();
+  phase = 'spark'; render();
 }
 
 function _showAnonLimitModal() {
@@ -1474,7 +1472,7 @@ function _showExtraSimsModal() {
     + '<div style="background:rgba(180,79,255,0.08);padding:20px;text-align:center;border-bottom:1px solid rgba(180,79,255,0.3);">'
     + '<div style="font-size:28px;margin-bottom:8px">❤️</div>'
     + '<div style="font-family:var(--px);font-size:9px;color:var(--purple);line-height:1.9;margin-bottom:4px">' + (lang==='pt'?'SIMS DO DIA ESGOTADAS':'DAILY SIMS USED UP') + '</div>'
-    + '<div style="font-size:13px;color:var(--muted2);line-height:1.6">' + (lang==='pt'?'Suas 3 simulações de hoje acabaram. Compre 3 sims extras — sem prazo de validade.':'Your 3 daily simulations are done. Get 3 extra sims — they never expire.') + '</div>'
+    + '<div style="font-size:13px;color:var(--muted2);line-height:1.6">' + (lang==='pt'?'Suas 2 simulações de hoje acabaram. Compre 3 sims extras — sem prazo de validade.':'Your 2 daily simulations are done. Get 3 extra sims — they never expire.') + '</div>'
     + '</div>'
     + '<div style="padding:20px;">'
     + '<div style="font-family:var(--px);font-size:26px;color:var(--purple);text-align:center;margin-bottom:4px">R$9,90</div>'
@@ -1738,6 +1736,7 @@ function goDirectScore() { phase = 'verdict'; render(); }
 async function _checkAnalysisAccess() {
   phase = 'dashboard';
   render();
+  setTimeout(function(){ _showAnalysisPaywall(false); }, 100);
 }
 
 async function _generateAnalysis() {
@@ -1788,22 +1787,31 @@ function _saveAndShowAnalysis() {
   _showToast(lang==='pt'?'✓ ANÁLISE DESBLOQUEADA':'✓ ANALYSIS UNLOCKED', 'var(--cyan)');
 }
 
-function _showAnalysisPaywall() {
+function _showAnalysisPaywall(fromHistory) {
   var modal = document.createElement('div');
   modal.id = 'analysisPayModal';
   modal.style.cssText = 'position:fixed;inset:0;z-index:1000;background:rgba(7,7,20,0.92);display:flex;align-items:center;justify-content:center;padding:20px;';
+  // Two different tones: post-verdict (empolgação) vs history (lembrança)
+  var headline = fromHistory
+    ? (lang==='pt'?'VOCÊ TINHA UMA IDEIA APROVADA AQUI.':'YOU HAD AN APPROVED IDEA HERE.')
+    : (lang==='pt'?'SUA IDEIA FOI APROVADA.':'YOUR IDEA WAS APPROVED.');
+  var subhead = fromHistory
+    ? (lang==='pt'?'Ainda quer saber o que estava por trás?':'Still want to know what was behind it?')
+    : (lang==='pt'?'Veja o que está por trás da aprovação.':'See what is behind the approval.');
+  var notNow = fromHistory
+    ? (lang==='pt'?'FECHAR':'CLOSE')
+    : (lang==='pt'?'AGORA NÃO · FICA SALVO NO HISTÓRICO':'NOT NOW · SAVED IN HISTORY');
+
   modal.innerHTML = ''
     + '<div style="background:var(--surface);border:2px solid var(--cyan);max-width:360px;width:100%;overflow:hidden;">'
     + '<div style="height:3px;background:linear-gradient(90deg,transparent,var(--cyan),transparent)"></div>'
     + '<div style="padding:20px 20px 0;">'
-    + '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">'
-    + '<div>'
-    + '<div style="font-family:var(--px);font-size:7px;color:var(--muted2);letter-spacing:0.15em;margin-bottom:4px">' + (lang==='pt'?'SUA IDEIA FOI SIMULADA':'YOUR IDEA WAS SIMULATED') + '</div>'
-    + '<div style="font-family:var(--px);font-size:10px;color:var(--cyan);letter-spacing:0.08em">' + (lang==='pt'?'VER ANÁLISE COMPLETA':'SEE FULL ANALYSIS') + '</div>'
-    + '</div>'
-    + '<div style="text-align:right">'
-    + '<div style="font-size:26px;font-weight:900;font-family:Orbitron,monospace;color:var(--cyan);line-height:1">R$24,90</div>'
-    + '<div style="font-family:var(--px);font-size:6px;color:var(--muted2);margin-top:2px">' + (lang==='pt'?'pagamento único':'one-time') + '</div>'
+    + '<div style="margin-bottom:14px">'
+    + '<div style="font-family:var(--px);font-size:9px;color:var(--cyan);letter-spacing:0.08em;margin-bottom:6px;line-height:1.6">' + headline + '</div>'
+    + '<div style="font-size:13px;color:var(--muted2);line-height:1.5;margin-bottom:10px">' + subhead + '</div>'
+    + '<div style="display:flex;align-items:baseline;gap:8px">'
+    + '<div style="font-size:28px;font-weight:900;font-family:Orbitron,monospace;color:var(--cyan);line-height:1">R$19,90</div>'
+    + '<div style="font-family:var(--px);font-size:6px;color:var(--muted2)">' + (lang==='pt'?'pagamento único':'one-time') + '</div>'
     + '</div>'
     + '</div>'
     + '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:14px">'
@@ -1817,7 +1825,7 @@ function _showAnalysisPaywall() {
     + '<button onclick="_buyAnalysis();" style="width:100%;font-family:var(--px);font-size:9px;padding:16px;background:rgba(0,245,255,0.08);border:2px solid var(--cyan);color:var(--cyan);cursor:pointer;margin-bottom:8px;letter-spacing:0.06em;">'
     + (lang==='pt'?'DESBLOQUEAR ANÁLISE':'UNLOCK ANALYSIS') + '</button>'
     + '<button onclick="document.getElementById(&apos;analysisPayModal&apos;).remove();" style="width:100%;font-family:var(--px);font-size:7px;padding:10px;background:transparent;border:none;color:var(--muted);cursor:pointer;letter-spacing:0.08em;margin-bottom:8px">'
-    + (lang==='pt'?'AGORA NÃO':'NOT NOW') + '</button>'
+    + notNow + '</button>'
     + '</div></div>';
   document.body.appendChild(modal);
 }
@@ -2048,9 +2056,10 @@ async function showVerdict(a) {
       + '<div class="verdict-score">' + an.score + '/100 &middot; ' + an.scoreLabel + '</div>'
       + '<div class="verdict-msg">' + msg + '</div>'
       + '</div>'
-      + '<div class="btn-row one">'
-      + '<button class="btn btn-cyan" onclick="_checkAnalysisAccess()">&gt; ' + tx.seeAnalysis + '</button>'
-      + '</div>'
+      + (funded
+        ? '<div class="btn-row one"><button class="btn btn-cyan" onclick="_checkAnalysisAccess()">&gt; ' + tx.seeAnalysis + '</button></div>'
+          + '<div style="margin-top:6px;text-align:center;font-family:var(--px);font-size:6px;color:var(--muted2);letter-spacing:0.1em">R$19,90 · ' + (lang==='pt'?'pagamento único':'one-time payment') + '</div>'
+        : '')
       + '<div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">'
       + '<button class="btn btn-ghost" onclick="replayRPG()">&#8635; ' + tx.replay + '</button>'
       + '<button class="btn btn-ghost" onclick="resetAll()">&#8635; ' + tx.newSim + '</button>'
@@ -2495,7 +2504,7 @@ function openPricing() {
     + '<button onclick="closePricing()" style="font-family:Share Tech Mono,monospace;font-size:18px;color:var(--muted);background:transparent;border:none;cursor:pointer;padding:4px 8px">✕</button>'
     + '</div>'
     + '<p style="font-size:13px;color:var(--muted2);margin-bottom:20px;line-height:1.6">' + (lang==='pt'?'Simule suas ideias antes de investir tempo ou dinheiro.':'Simulate your ideas before investing time or money.') + '</p>'
-    + '<div class="plan plan-free"><div class="plan-name">FREE</div><div class="plan-price"><span class="plan-val">R$0</span><span class="plan-period">' + (lang==='pt'?'/ sempre':'/ always') + '</span></div><div class="plan-feats"><div class="plan-feat on">' + (lang==='pt'?'2 simulações para sempre':'2 simulations forever') + '</div><div class="plan-feat on">' + (lang==='pt'?'Experiência completa':'Full experience') + '</div><div class="plan-feat on">Score, ' + (lang==='pt'?'análise':'analysis') + ', ' + (lang==='pt'?'riscos':'risks') + ' e PDF</div></div><button class="plan-btn" onclick="closePricing()">' + (lang==='pt'?'PLANO ATUAL':'CURRENT PLAN') + '</button></div>'
+    + '<div class="plan plan-free"><div class="plan-name">FREE</div><div class="plan-price"><span class="plan-val">R$0</span><span class="plan-period">' + (lang==='pt'?'/ sempre':'/ always') + '</span></div><div class="plan-feats"><div class="plan-feat on">' + (lang==='pt'?'2 simulações por dia':'2 simulations per day') + '</div><div class="plan-feat on">' + (lang==='pt'?'Experiência completa':'Full experience') + '</div><div class="plan-feat on">Score, ' + (lang==='pt'?'análise':'analysis') + ', ' + (lang==='pt'?'riscos':'risks') + ' e PDF</div></div><button class="plan-btn" onclick="closePricing()">' + (lang==='pt'?'PLANO ATUAL':'CURRENT PLAN') + '</button></div>'
     + '<div class="plan plan-starter popular"><div class="plan-badge">POPULAR</div><div class="plan-name">PACK 5 SIMS</div><div class="plan-price"><span class="plan-val">R$9,90</span><span class="plan-period">/ pack</span></div><div class="plan-feats"><div class="plan-feat on">' + (lang==='pt'?'5 simulações completas':'5 complete simulations') + '</div><div class="plan-feat on">' + (lang==='pt'?'Experiência completa':'Full experience') + '</div><div class="plan-feat on">Score, ' + (lang==='pt'?'análise':'analysis') + ' & PDF</div><div class="plan-feat on">' + (lang==='pt'?'Créditos sem prazo de validade':'Credits never expire') + '</div></div><button class="plan-btn" onclick="closePricing();_openStripe(&apos;https://buy.stripe.com/cNi00ccp2eqCgiKg18abK01&apos;);">' + (lang==='pt'?'COMPRAR':'BUY') + '</button><div class="plan-note">' + (lang==='pt'?'~R$1,98 por simulação · Preço em BRL · Convertido no checkout':'~R$1.98/sim · Price in BRL · Auto-converted at checkout') + '</div></div>';
   overlay.style.display = 'block';
   overlay.scrollTop = 0;
@@ -2747,9 +2756,15 @@ function _openSimDetail(idx) {
   state.spark = s.spark || '';
   state.objective = s.objective || '';
   state.sources = s.sources || [];
+  window._currentSimId = s.id || null;
   closeMySims();
   phase = 'dashboard';
   render();
+  // Show paywall if analysis not paid (only for approved ideas)
+  var funded = state.analysis && state.analysis.score >= 65;
+  if (funded && !s.analysis_paid) {
+    setTimeout(function(){ _showAnalysisPaywall(true); }, 100);
+  }
 }
 
 // ── PAYWALL ──
