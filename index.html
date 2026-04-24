@@ -529,11 +529,6 @@ body.hud-visible #hmenu{top:100px;}
 </div>
 <div id="simHud">
   <div class="hud-hearts" id="hudHearts"></div>
-  <div class="hud-counter">
-    <span class="hud-num" id="hudNum">-</span>
-    <span class="hud-of" id="hudOf">SIMS</span>
-  </div>
-  <div class="hud-plan-badge" id="hudPlan" style="display:none"></div>
 </div>
 <div id="skinsOverlay">
   <div class="sk-header">
@@ -689,8 +684,9 @@ function _renderHud() {
   if (renewEl) renewEl.style.display = zeroed ? 'block' : 'none';
 
   hud.style.borderBottomColor = color;
-  hud.classList.add('visible');
-  document.body.classList.add('hud-visible');
+  // HUD display disabled
+  hud.classList.remove('visible');
+  document.body.classList.remove('hud-visible');
 }
 
 function _updateStreakDisplay() {
@@ -701,7 +697,7 @@ function _updateStreakDisplay() {
     var limit = window._userSimLimit || 3;
     var remaining = Math.max(0, limit - used);
     var planName = limit <= 2 ? 'FREE' : limit <= 5 ? 'STARTER' : 'PRO';
-    el.innerHTML = _pixelBulb() + ' ' + remaining + ' DE ' + limit + ' SIMS · ' + planName;
+    el.innerHTML = '';
   }
   _renderHud();
 }
@@ -1301,12 +1297,11 @@ function showIntro(a) {
   var tx = t();
   var streakHtml;
   if (_user) {
-    streakHtml = '<div class="streak" id="user-sim-streak">' + _pixelBulb() + ' ... CARREGANDO...</div>';
-    setTimeout(_updateStreakDisplay, 300);
+    streakHtml = '';
   } else {
     var anonUsed = _getAnonSimCount();
     var anonRemaining = Math.max(0, 2 - anonUsed);
-    streakHtml = '<div class="streak">' + _pixelBulb() + ' ' + anonRemaining + (lang==='pt'?' DE 2 SIMS DISPONÍVEIS':' OF 2 SIMS AVAILABLE') + '</div>';
+    streakHtml = '';
   }
   var solve = false;
   var stepList = tx.steps.map(function(s, i) {
