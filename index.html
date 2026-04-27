@@ -637,11 +637,11 @@ function _pixelHeart(color, full) {
 }
 
 function _renderHud() {
-  // Sim limits removed — HUD hidden
   var hud = document.getElementById('simHud');
-  if (hud) { hud.classList.remove('visible'); document.body.classList.remove('hud-visible'); }
-  if (!_user) return;
+  if (!hud) return;
+  if (!_user) { hud.classList.remove('visible'); document.body.classList.remove('hud-visible'); return; }
   var used = window._userSimCount || 0;
+  var limit = 3;
   var limit = window._userSimLimit || 3;
   var remaining = Math.max(0, limit - used);
   var planName = limit <= 2 ? 'FREE' : limit <= 5 ? 'STARTER' : 'PRO';
@@ -653,7 +653,7 @@ function _renderHud() {
   var ofEl = document.getElementById('hudOf');
   var planEl = document.getElementById('hudPlan');
   var renewEl = document.getElementById('hudRenew');
-  var hud = document.getElementById('simHud');
+  // hud already declared above
 
   if (!hud) return;
 
@@ -684,9 +684,9 @@ function _renderHud() {
   if (renewEl) renewEl.style.display = zeroed ? 'block' : 'none';
 
   hud.style.borderBottomColor = color;
-  // HUD display disabled
-  hud.classList.remove('visible');
-  document.body.classList.remove('hud-visible');
+  hud.style.borderBottomColor = color;
+  hud.classList.add('visible');
+  document.body.classList.add('hud-visible');
 }
 
 function _updateStreakDisplay() {
@@ -1576,12 +1576,12 @@ async function genOutcome(a) {
     var _tc = themeContext ? '\n' + themeContext : '';
     if (isSolve()) {
       prompt = lang === 'pt'
-        ? 'Gere UMA hipotese no formato: [quem] resolve [problema] atraves de [mecanismo]. Max 25 palavras.\n\nProblema: ' + state.spark + '\nNecessidade: ' + state.objective + '\n' + altNote + '\n\nJSON sem backticks:{"outcome":"hipotese no formato indicado","title":"3-4 palavras"}'
-        : 'Generate ONE hypothesis: [who] solves [problem] through [mechanism]. Max 25 words.\n\nProblem: ' + state.spark + '\nNeed: ' + state.objective + '\n' + altNote + '\n\nJSON no backticks:{"outcome":"hypothesis in stated format","title":"3-4 words"}';
+        ? 'Gere UMA hipotese de solucao concreta e testavel. Formato obrigatorio: [perfil do usuario] consegue [resultado especifico e mensuravel] atraves de [mecanismo diferenciado], diferente de [alternativa atual] porque [vantagem unica]. Max 40 palavras. Seja especifico — evite genericos como "plataforma", "solucao" ou "ferramenta".\n\nProblema: ' + state.spark + '\nNecessidade: ' + state.objective + '\n' + altNote + '\n\nJSON sem backticks:{"outcome":"hipotese no formato indicado","title":"3-4 palavras que nomeiam a solucao"}'
+        : 'Generate ONE concrete testable hypothesis. Required format: [user profile] achieves [specific measurable result] through [differentiated mechanism], unlike [current alternative] because [unique advantage]. Max 40 words. Be specific — avoid generics like "platform", "solution" or "tool".\n\nProblem: ' + state.spark + '\nNeed: ' + state.objective + '\n' + altNote + '\n\nJSON no backticks:{"outcome":"hypothesis in stated format","title":"3-4 words naming the solution"}';
     } else {
       prompt = lang === 'pt'
-        ? 'Gere UMA hipotese testavel no formato: [quem] consegue [resultado] atraves de [mecanismo]. Max 25 palavras.' + _tc + '\n\nIdeia: ' + state.spark + '\nObjetivo: ' + state.objective + '\n' + altNote + '\n\nJSON sem backticks:{"outcome":"hipotese no formato indicado","title":"3-4 palavras"}'
-        : 'Generate ONE testable hypothesis: [who] achieves [result] through [mechanism]. Max 25 words.' + _tc + '\n\nIdea: ' + state.spark + '\nObjective: ' + state.objective + '\n' + altNote + '\n\nJSON no backticks:{"outcome":"hypothesis in stated format","title":"3-4 words"}';
+        ? 'Gere UMA hipotese testavel e especifica. Formato obrigatorio: [perfil do usuario] consegue [resultado especifico e mensuravel] atraves de [mecanismo diferenciado], diferente de [alternativa atual] porque [vantagem unica]. Max 40 palavras. Seja especifico — evite genericos como "plataforma", "solucao" ou "ferramenta".' + _tc + '\n\nIdeia: ' + state.spark + '\nObjetivo: ' + state.objective + '\n' + altNote + '\n\nJSON sem backticks:{"outcome":"hipotese no formato indicado","title":"3-4 palavras que nomeiam a ideia"}'
+        : 'Generate ONE specific testable hypothesis. Required format: [user profile] achieves [specific measurable result] through [differentiated mechanism], unlike [current alternative] because [unique advantage]. Max 40 words. Be specific — avoid generics like "platform", "solution" or "tool".' + _tc + '\n\nIdea: ' + state.spark + '\nObjective: ' + state.objective + '\n' + altNote + '\n\nJSON no backticks:{"outcome":"hypothesis in stated format","title":"3-4 words naming the idea"}';
     }
     var res = await api(prompt, 200);
     state.outcome = res.outcome; state.title = res.title;
@@ -1907,10 +1907,7 @@ async function showVerdict(a) {
       + '<div class="verdict-score">' + an.score + '/100 &middot; ' + an.scoreLabel + '</div>'
       + '<div class="verdict-msg">' + msg + '</div>'
       + '</div>'
-      + (funded
-        ? '<div class="btn-row one"><button class="btn btn-cyan" onclick="_checkAnalysisAccess()">&gt; ' + tx.seeAnalysis + '</button></div>'
-          + '<div style="margin-top:6px;text-align:center;font-family:var(--px);font-size:6px;color:var(--muted2);letter-spacing:0.1em">R$19,90 · ' + (lang==='pt'?'pagamento único':'one-time payment') + '</div>'
-        : '')
+      + '<div class="btn-row one"><button class="btn btn-cyan" onclick="_checkAnalysisAccess()">&gt; ' + tx.seeAnalysis + '</button></div>'
       + '<div style="margin-top:10px;display:flex;flex-direction:column;gap:8px">'
       + '<button class="btn btn-ghost" onclick="replayRPG()">&#8635; ' + tx.replay + '</button>'
       + '<button class="btn btn-ghost" onclick="resetAll()">&#8635; ' + tx.newSim + '</button>'
