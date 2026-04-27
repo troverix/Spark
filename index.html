@@ -1576,12 +1576,12 @@ async function genOutcome(a) {
     var _tc = themeContext ? '\n' + themeContext : '';
     if (isSolve()) {
       prompt = lang === 'pt'
-        ? 'Voce e um especialista em resolucao de problemas. Com base no problema e na necessidade abaixo, gere UMA hipotese de solucao concreta e testavel (1-2 frases). Seja especifico, pratico e direto ao ponto. Evite solucoes genericas.\n\nProblema: ' + state.spark + '\nO que precisa resolver: ' + state.objective + '\n' + altNote + '\n\nJSON sem backticks:\n{\"outcome\":\"hipotese de solucao em 1-2 frases\",\"title\":\"nome da solucao em 3-5 palavras\"}'
-        : 'You are a problem-solving expert. Based on the problem and need below, generate ONE concrete and testable solution hypothesis (1-2 sentences). Be specific, practical and direct. Avoid generic solutions.\n\nProblem: ' + state.spark + '\nWhat needs to be resolved: ' + state.objective + '\n' + altNote + '\n\nJSON no backticks:\n{\"outcome\":\"solution hypothesis in 1-2 sentences\",\"title\":\"solution name in 3-5 words\"}';
+        ? 'Gere UMA hipotese no formato: [quem] resolve [problema] atraves de [mecanismo]. Max 25 palavras.\n\nProblema: ' + state.spark + '\nNecessidade: ' + state.objective + '\n' + altNote + '\n\nJSON sem backticks:{"outcome":"hipotese no formato indicado","title":"3-4 palavras"}'
+        : 'Generate ONE hypothesis: [who] solves [problem] through [mechanism]. Max 25 words.\n\nProblem: ' + state.spark + '\nNeed: ' + state.objective + '\n' + altNote + '\n\nJSON no backticks:{"outcome":"hypothesis in stated format","title":"3-4 words"}';
     } else {
       prompt = lang === 'pt'
-        ? 'Voce e um especialista em validacao de ideias e estrategia. Com base na ideia e objetivo abaixo, gere UMA hipotese testavel e especifica (1-2 frases). Conecte a ideia ao objetivo revelando o mecanismo central que tornaria isso bem-sucedido.' + _tc + '\n\nIdeia: ' + state.spark + '\nObjetivo: ' + state.objective + '\n' + altNote + '\n\nJSON sem backticks:\n{\"outcome\":\"hipotese com mecanismo claro em 1-2 frases\",\"title\":\"nome da ideia em 3-5 palavras\"}'
-        : 'You are a business strategy and idea validation expert. Based on the idea and objective below, generate ONE specific and testable hypothesis (1-2 sentences). Connect the idea to the objective by revealing the core mechanism that would make this successful.' + _tc + '\n\nIdea: ' + state.spark + '\nObjective: ' + state.objective + '\n' + altNote + '\n\nJSON no backticks:\n{\"outcome\":\"hypothesis with clear mechanism in 1-2 sentences\",\"title\":\"idea name in 3-5 words\"}';
+        ? 'Gere UMA hipotese testavel no formato: [quem] consegue [resultado] atraves de [mecanismo]. Max 25 palavras.' + _tc + '\n\nIdeia: ' + state.spark + '\nObjetivo: ' + state.objective + '\n' + altNote + '\n\nJSON sem backticks:{"outcome":"hipotese no formato indicado","title":"3-4 palavras"}'
+        : 'Generate ONE testable hypothesis: [who] achieves [result] through [mechanism]. Max 25 words.' + _tc + '\n\nIdea: ' + state.spark + '\nObjective: ' + state.objective + '\n' + altNote + '\n\nJSON no backticks:{"outcome":"hypothesis in stated format","title":"3-4 words"}';
     }
     var res = await api(prompt, 200);
     state.outcome = res.outcome; state.title = res.title;
@@ -1746,7 +1746,13 @@ async function showRPG(a) {
     + pills + loading('CAP. ' + (chapNum+1) + '...') + '</div></div>';
 
   try {
-    var storyCtx = story.length > 0 ? (lang==='pt'?'Historia ate agora:':'Story so far:') + '\n' + story.join('\n---\n') : '';
+    // Compress story history — send only last chapter summary, not full text
+  var storyCtx = '';
+  if (story.length > 0) {
+    var lastIdx = story.length - 1;
+    var lastSummary = story[lastIdx].split(' ').slice(0, 20).join(' ') + (story[lastIdx].split(' ').length > 20 ? '...' : '');
+    storyCtx = (lang==='pt' ? 'Cap. anterior (resumo): ' : 'Previous cap. (summary): ') + lastSummary;
+  }
     var histCtx = hist.length > 0 ? (lang==='pt'?'Escolhas:':'Choices:') + ' ' + hist.join(' > ') : '';
     var isFS = isFinal ? 'true' : 'false';
     var choicesStr = isFinal ? 'null' : '[{"letter":"A","text":"max 7 words"},{"letter":"B","text":"max 7 words"}]';
@@ -1818,12 +1824,16 @@ async function showVerdict(a) {
   try {
     var sp = isSolve()
       ? (lang === 'pt'
-        ? 'Pesquise contexto real sobre este problema: quantas pessoas/empresas enfrentam isso, quais solucoes existem hoje e suas limitacoes, tendencias de mercado relevantes. 2-3 frases com dados.\n\nProblema: ' + state.spark + '\nSolucao proposta: ' + state.outcome
-        : 'Research real context about this problem: how many people/companies face it, what solutions exist today and their limitations, relevant market trends. 2-3 sentences with data.\n\nProblem: ' + state.spark + '\nProposed solution: ' + state.outcome)
+        ? 'Responda SOMENTE em JSON sem backticks:{"tamanho":"quantas pessoas/empresas enfrentam em 1 frase","tendencia":"limitacao das solucoes atuais em 1 frase","competidor":"1 solucao existente"}\n\nProblema: ' + state.spark
+        : 'Respond ONLY in JSON no backticks:{"tamanho":"how many people/companies face this in 1 sentence","tendencia":"main limitation of current solutions in 1 sentence","competidor":"1 existing solution"}\n\nProblem: ' + state.spark)
       : (lang === 'pt'
-        ? 'Pesquise tamanho de mercado, tendencia de crescimento e players relevantes para esta ideia. 2-3 frases com dados concretos.\n\nIdeia: ' + state.outcome + '\nContexto: ' + (state.theme==='criativo'?'projeto criativo':state.theme==='impacto'?'impacto social':state.theme==='carreira'?'carreira profissional':'negocio')
-        : 'Research market size, growth trend and relevant players for this idea. 2-3 sentences with concrete data.\n\nIdea: ' + state.outcome + '\nContext: ' + (state.theme==='criativo'?'creative project':state.theme==='impacto'?'social impact':state.theme==='carreira'?'professional career':'business'));
-    marketData = await apiSearch(sp, 400);
+        ? 'Responda SOMENTE em JSON sem backticks:{"tamanho":"tamanho de mercado em 1 frase com numero","tendencia":"principal tendencia 12 meses em 1 frase","competidor":"1 competidor direto"}\n\nIdeia: ' + state.outcome + '\nSetor: ' + (state.theme==='criativo'?'criativo':state.theme==='impacto'?'impacto social':state.theme==='carreira'?'carreira':'negocio')
+        : 'Respond ONLY in JSON no backticks:{"tamanho":"market size in 1 sentence with number","tendencia":"main trend last 12 months in 1 sentence","competidor":"1 direct competitor"}\n\nIdea: ' + state.outcome + '\nSector: ' + (state.theme==='criativo'?'creative':state.theme==='impacto'?'social impact':state.theme==='carreira'?'career':'business'));
+    var rawMarket = await apiSearch(sp, 200);
+    try {
+      var mParsed = JSON.parse(rawMarket.replace(/```json|```/g,'').trim());
+      marketData = (mParsed.tamanho || '') + ' ' + (mParsed.tendencia || '') + ' ' + (mParsed.competidor ? ('Ref: ' + mParsed.competidor) : '');
+    } catch(e) { marketData = rawMarket; }
     _fetchSourcesInBackground(sp);
   } catch(e) { marketData = lang === 'pt' ? 'Dados nao disponiveis.' : 'Data not available.'; }
 
