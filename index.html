@@ -1725,9 +1725,8 @@ function _showLoginRequiredModal(onLogin) {
 
 
 function startRPG() {
-  _rpgCount++; _saveSkinData(); phase = 'rpg'; hist = []; story = []; chapNum = 0; render(); }
+  _rpgCount++; _saveSkinData(); hist = []; story = []; chapNum = 0; phase = 'rpg'; render(); }
 function replayRPG() { hist = []; story = []; chapNum = 0; phase = 'rpg'; render(); }
-
 // ── RPG ──
 async function showRPG(a) {
   var tx = t();
@@ -1747,13 +1746,13 @@ async function showRPG(a) {
 
   try {
     // Compress story history — send only last chapter summary, not full text
-  var storyCtx = '';
-  if (story.length > 0) {
-    var lastIdx = story.length - 1;
-    var lastSummary = story[lastIdx].split(' ').slice(0, 20).join(' ') + (story[lastIdx].split(' ').length > 20 ? '...' : '');
-    storyCtx = (lang==='pt' ? 'Cap. anterior (resumo): ' : 'Previous cap. (summary): ') + lastSummary;
-  }
-    var histCtx = hist.length > 0 ? (lang==='pt'?'Escolhas:':'Choices:') + ' ' + hist.join(' > ') : '';
+    // Compress story history — send only last chapter summary
+    var storyCtx = '';
+    if (story.length > 0) {
+      var lastIdx = story.length - 1;
+      var lastSummary = story[lastIdx].split(' ').slice(0, 20).join(' ') + (story[lastIdx].split(' ').length > 20 ? '...' : '');
+      storyCtx = (lang==='pt' ? 'Cap. anterior (resumo): ' : 'Previous cap. (summary): ') + lastSummary;
+    }
     var isFS = isFinal ? 'true' : 'false';
     var choicesStr = isFinal ? 'null' : '[{"letter":"A","text":"max 7 words"},{"letter":"B","text":"max 7 words"}]';
     var guide;
@@ -1812,6 +1811,8 @@ async function showRPG(a) {
 function choose(idx) {
   var c = window._ch[idx];
   if (c) hist.push(c.text);
+  prog(['spark','objective','outcome','rpg','verdict','dashboard'].indexOf('rpg'));
+  document.getElementById('progLbl').textContent = 'CAP. ' + (chapNum+1) + ' / 4';
   chapNum++;
   showRPG(document.getElementById('app'));
 }
@@ -1967,7 +1968,7 @@ function showDashboard(a) {
         + '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px">'
         + an.teamRoles.map(function(r){ return '<div style="background:rgba(180,79,255,0.1);border:1px solid rgba(180,79,255,0.3);padding:7px 14px;font-family:Share Tech Mono,monospace;font-size:10px;letter-spacing:0.1em;color:#d8a0ff">' + r + '</div>'; }).join('')
         + '</div>'
-        + (an.teamCostData ? '<div style="background:rgba(255,255,255,0.04);border:1px solid #3a3a7e;padding:14px;font-size:14px;color:#d0d0f0;line-height:1.7;margin-bottom:10px">' + an.teamCostData + '</div>' : '')
+        + ((an.teamCostData && an.teamCostData.indexOf('nao disponiveis') === -1 && an.teamCostData.indexOf('not available') === -1) ? '<div style="background:rgba(255,255,255,0.04);border:1px solid #3a3a7e;padding:14px;font-size:14px;color:#d0d0f0;line-height:1.7;margin-bottom:10px">' + an.teamCostData + '</div>' : '')
         + '<div style="background:rgba(0,245,255,0.05);border:1px solid rgba(0,245,255,0.15);padding:12px 14px;font-size:13px;color:#c0c0e0;line-height:1.6;margin-bottom:10px">'
         + (lang==='pt'?'<strong style="color:#00f5ff">Alternativa solo:</strong> ferramentas no-code + IA podem reduzir significativamente o custo inicial.'
                       :'<strong style="color:#00f5ff">Solo alternative:</strong> no-code tools + AI can significantly reduce initial costs.')
