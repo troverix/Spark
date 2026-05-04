@@ -2123,6 +2123,7 @@ async function api(prompt, maxTokens) {
     body: JSON.stringify({model:'claude-sonnet-4-20250514', max_tokens:maxTokens, messages:[{role:'user',content:prompt}]})
   });
   var d = await res.json();
+  if (!res.ok) throw new Error('API error ' + res.status + ': ' + JSON.stringify(d));
   if (!d.content || !d.content[0]) throw new Error('empty');
   var blocks = d.content.filter(function(b){ return b.type==='text'; });
   var txt = blocks.length ? blocks[blocks.length-1].text : d.content[0].text;
