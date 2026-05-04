@@ -15,6 +15,9 @@ exports.handler = async function (event) {
     return { statusCode: 400, body: JSON.stringify({ error: 'Invalid JSON' }) };
   }
 
+  // Log incoming request for debugging
+  console.log('RPG request — model:', body.model, 'max_tokens:', body.max_tokens, 'prompt_len:', JSON.stringify(body.messages).length);
+
   try {
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
@@ -28,12 +31,21 @@ exports.handler = async function (event) {
 
     const data = await response.json();
 
+    // Log error responses from Anthropic
+    if (!response.ok) {
+      console.error('Anthropic error:', response.status, JSON.stringify(data));
+    }
+
     return {
       statusCode: response.status,
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
       body: JSON.stringify(data),
     };
   } catch (err) {
+    console.error('Function error:', err.message);
     return {
       statusCode: 502,
       body: JSON.stringify({ error: 'Upstream error', detail: err.message }),
