@@ -1237,8 +1237,7 @@ function prog(a) {
   var phases = ['spark','objective','outcome','rpg','verdict','dashboard'];
   var idx = phases.indexOf(phase);
   var lbl = '';
-  if (phase === 'rpg') lbl = 'CAP. ' + (chapNum+1) + ' / 4';
-  else if (t().prog[phase]) lbl = t().prog[phase];
+  if (t().prog[phase]) lbl = t().prog[phase];
   document.getElementById('progLbl').textContent = lbl;
 }
 
@@ -1722,7 +1721,7 @@ async function showRPG(a) {
     + '</div>' : '';
 
   a.innerHTML = '<div class="card"><div class="card-body">'
-    + '<div class="chap-strip"><div class="chap-dots">' + dots + '</div><div class="chap-label">' + chaps[Math.min(chapNum,3)] + '</div></div>'
+    + '<div class="chap-strip"><div class="chap-dots">' + dots + '</div></div>'
     + pills + loading('CAP. ' + (chapNum+1) + '...') + '</div></div>';
 
   try {
@@ -1777,7 +1776,7 @@ async function showRPG(a) {
       + '</div>' : '';
 
     a.innerHTML = '<div class="card"><div class="card-body">'
-      + '<div class="chap-strip"><div class="chap-dots">' + updDots + '</div><div class="chap-label">' + chaps[Math.min(chapNum,3)] + '</div></div>'
+      + '<div class="chap-strip"><div class="chap-dots">' + updDots + '</div></div>'
       + pills + '<div class="rpg-scene">' + pars + '</div>' + vb + ch + nb + '</div></div>';
   } catch(e) {
     window._lastRPGError = e.message;
@@ -1790,7 +1789,6 @@ function choose(idx) {
   var c = window._ch[idx];
   if (c) hist.push(c.text);
   prog(['spark','objective','outcome','rpg','verdict','dashboard'].indexOf('rpg'));
-  document.getElementById('progLbl').textContent = 'CAP. ' + (chapNum+1) + ' / 4';
   chapNum++;
   showRPG(document.getElementById('app'));
 }
