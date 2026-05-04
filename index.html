@@ -1778,12 +1778,12 @@ async function showRPG(a) {
       ? 'Voce e um narrador cinematografico. Narre capitulo ' + (chapNum+1) + '/4. A solucao JA EXISTE — simule o uso real com tensao genuina.\n\n' + rpgContext
       : 'You are a cinematic narrator. Narrate chapter ' + (chapNum+1) + '/4. Solution ALREADY EXISTS — simulate real usage with genuine tension.\n\n' + rpgContext)
       + '\n' + storyCtx + '\n' + histCtx + '\n\n' + guide
+      + '\n' + storyCtx + '\n' + histCtx + '\n\n' + guide
       + (lang==='pt'
-        ? '\n\nMax 60 palavras na narrativa. Responda SEMPRE em portugues.\nJSON sem backticks:\n{"narrative":"2 frases","isFinal":' + isFS + ',"verdict":' + (isFinal?'"1 frase de veredicto"':'null') + ',"choices":' + choicesStr + '}'
-        : '\n\nMax 60 words in narrative.\nJSON no backticks:\n{"narrative":"2 sentences","isFinal":' + isFS + ',"verdict":' + (isFinal?'"1 verdict sentence"':'null') + ',"choices":' + choicesStr + '}');
+        ? '\n\nMax 60 palavras na narrativa. Responda SEMPRE em portugues. CRITICO: retorne SOMENTE o JSON, sem texto antes ou depois. {"narrative":"2 frases","isFinal":' + isFS + ',"verdict":' + (isFinal?'"1 frase"':'null') + ',"choices":' + choicesStr + '}'
+        : '\n\nMax 60 words. CRITICAL: return ONLY JSON, no text before or after. {"narrative":"2 sentences","isFinal":' + isFS + ',"verdict":' + (isFinal?'"1 sentence"':'null') + ',"choices":' + choicesStr + '}');
 
-    var sc = await api(p, 250);
-    window._ch = sc.choices || [];
+    var sc = await api(p, 350);
     story.push(sc.narrative);
 
     var pars = sc.narrative.split('\n\n').filter(function(x){ return x.trim(); }).map(function(x){ return '<p>' + x.trim() + '</p>'; }).join('');
@@ -2126,7 +2126,17 @@ async function api(prompt, maxTokens) {
   if (!d.content || !d.content[0]) throw new Error('empty');
   var blocks = d.content.filter(function(b){ return b.type==='text'; });
   var txt = blocks.length ? blocks[blocks.length-1].text : d.content[0].text;
-  return JSON.parse(txt.replace(/```json|```/g,'').trim());
+  // Robust JSON extractor — handles text before/after JSON
+  var clean = txt.replace(/```json|```/g, '').trim();
+  // Try direct parse first
+  try { return JSON.parse(clean); } catch(e) {}
+  // Try extracting first {...} block
+  var m = clean.match(/\{[\s\S]*\}/);
+  if (m) { try { return JSON.parse(m[0]); } catch(e) {} }
+  // Try extracting last {...} block
+  var all = clean.match(/\{[\s\S]*?\}/g);
+  if (all && all.length) { try { return JSON.parse(all[all.length-1]); } catch(e) {} }
+  throw new Error('No valid JSON in response: ' + clean.substring(0, 100));
 }
 
 // Reliable text search — no web search tool, always returns text
