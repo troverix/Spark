@@ -1609,28 +1609,7 @@ async function genOutcome(a) {
 }
 
 // ── ROUTE ──
-function showRoute() {
-  var tx = t();
-  var a = document.getElementById('app');
-  a.innerHTML = '<div class="card"><div class="card-body">'
-    + '<div class="step-title" style="font-size:clamp(14px,4vw,18px);margin-bottom:16px">' + tx.routeTitle + '</div>'
-    + '<div class="route-choice">'
-    + '<button class="route-btn story" onclick="startRPG()">'
-    + '<div class="route-icon">🎮</div>'
-    + '<div><div class="route-title">' + tx.routeStoryTitle + '</div>'
-    + '<div class="route-desc">' + tx.routeStoryDesc + '</div>'
-    + '<div class="route-time">' + tx.routeStoryTime + '</div></div>'
-    + '</button>'
-    + '<button class="route-btn fast" onclick="goDirectScore()">'
-    + '<div class="route-icon">⚡</div>'
-    + '<div><div class="route-title">' + tx.routeFastTitle + '</div>'
-    + '<div class="route-desc">' + tx.routeFastDesc + '</div>'
-    + '<div class="route-time">' + tx.routeFastTime + '</div></div>'
-    + '</button>'
-    + '</div>'
-    + '<div style="margin-top:12px"><button class="btn btn-back" onclick="phase=&apos;outcome&apos;;render()">&lt; ' + tx.back + '</button></div>'
-    + '</div></div>';
-}
+function showRoute() { phase = 'verdict'; render(); }
 
 function goDirectScore() { phase = 'verdict'; render(); }
 
@@ -1726,6 +1705,8 @@ function _showLoginRequiredModal(onLogin) {
 
 function startRPG() {
   _rpgCount++; _saveSkinData(); hist = []; story = []; chapNum = 0; phase = 'rpg'; render(); }
+function _launchNarrativeMode() { hist = []; story = []; chapNum = 0; phase = 'rpg'; render(); }
+
 function replayRPG() { hist = []; story = []; chapNum = 0; phase = 'rpg'; render(); }
 // ── RPG ──
 async function showRPG(a) {
@@ -2001,6 +1982,7 @@ function showDashboard(a) {
     + '<div style="padding:12px 20px;border-top:1px solid var(--border);display:flex;flex-direction:column;gap:8px">'
     + '<button class="btn btn-ghost" onclick="replayRPG()">&#8635; ' + tx.replay + '</button>'
     + '<button class="btn btn-ghost" onclick="resetAll()">&#8635; ' + tx.newSim + '</button>'
+      + '<button class="btn btn-ghost" style="border-color:rgba(180,79,255,0.4);color:#b44fff;margin-top:8px" onclick="_launchNarrativeMode()">' + (lang==='pt'?'&#127918; MODO NARRATIVA':'&#127918; NARRATIVE MODE') + '</button>'
     + (_user ? '<button class="btn btn-ghost" onclick="openMySims()">&#9776; ' + (lang==='pt' ? 'MINHAS SIMULA\u00c7\u00d5ES' : 'MY SIMULATIONS') + '</button>' : '')
     + '</div>'
     + '<div class="dash-footer">' + tx.footer + '</div>'
