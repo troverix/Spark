@@ -1726,54 +1726,49 @@ async function showRPG(a) {
     + pills + loading('CAP. ' + (chapNum+1) + '...') + '</div></div>';
 
   try {
-    // Compress story history — send only last chapter summary, not full text
-    // Compress story history — send only last chapter summary
     var storyCtx = '';
     if (story.length > 0) {
       var lastIdx = story.length - 1;
       var lastSummary = story[lastIdx].split(' ').slice(0, 20).join(' ') + (story[lastIdx].split(' ').length > 20 ? '...' : '');
       storyCtx = (lang==='pt' ? 'Cap. anterior (resumo): ' : 'Previous cap. (summary): ') + lastSummary;
     }
+    var histCtx = hist.length > 0 ? (lang==='pt'?'Escolhas:':'Choices:') + ' ' + hist.join(' > ') : '';
     var isFS = isFinal ? 'true' : 'false';
     var choicesStr = isFinal ? 'null' : '[{"letter":"A","text":"max 7 words"},{"letter":"B","text":"max 7 words"}]';
     var guide;
     if (isSolve()) {
-      if (isFinal) guide = lang==='pt' ? 'DESFECHO: Mostre o resultado concreto apos aplicar a solucao. Resolveu? Parcialmente? 1 frase de veredicto.' : 'OUTCOME: Show the concrete result after applying the solution. Resolved? Partially? 1 verdict sentence.';
-      else if (chapNum===0) guide = lang==='pt' ? 'ABERTURA: Solucao JA EXISTE. 1 pessoa com nome real que tem o problema comeca a usar a solucao. 2 frases. 1 decisao.' : 'OPENING: Solution ALREADY EXISTS. 1 person with real name who has the problem starts using it. 2 sentences. 1 decision.';
-      else if (chapNum===1) guide = lang==='pt' ? 'CONFLITO: CONTINUE A HISTORIA. A pessoa usa a solucao e encontra resistencia real. 2 frases de tensao. 1 escolha.' : 'CONFLICT: CONTINUE THE STORY. The person uses the solution and hits real resistance. 2 tension sentences. 1 choice.';
-      else guide = lang==='pt' ? 'VIRADA: CONTINUE A HISTORIA. A escolha teve consequencias. Algo muda. 2 frases de reviravolta. 1 decisao final.' : 'TWIST: CONTINUE THE STORY. The choice had consequences. Something changes. 2 reversal sentences. 1 final decision.';
+      if (isFinal) guide = lang==='pt' ? 'DESFECHO: Mostre o resultado concreto. 1 frase de veredicto.' : 'OUTCOME: Show concrete result. 1 verdict sentence.';
+      else if (chapNum===0) guide = lang==='pt' ? 'ABERTURA: 1 pessoa com nome real comeca a usar a solucao. 2 frases. 1 decisao.' : 'OPENING: 1 person with real name starts using the solution. 2 sentences. 1 decision.';
+      else if (chapNum===1) guide = lang==='pt' ? 'CONFLITO: CONTINUE. Resistencia real. 2 frases de tensao. 1 escolha.' : 'CONFLICT: CONTINUE. Real resistance. 2 tension sentences. 1 choice.';
+      else guide = lang==='pt' ? 'VIRADA: CONTINUE. Consequencias. 2 frases. 1 decisao final.' : 'TWIST: CONTINUE. Consequences. 2 sentences. 1 final decision.';
     } else {
-      if (isFinal) guide = lang==='pt' ? 'DESFECHO: 2 frases mostrando o impacto real na vida do protagonista. 1 frase de veredicto equilibrado.' : 'OUTCOME: 2 sentences showing real impact. 1 balanced verdict sentence.';
-      else if (chapNum===0) guide = lang==='pt' ? 'ABERTURA: Solucao JA EXISTE. 1 personagem com nome real descobre e usa pela primeira vez. 2 frases. 1 decisao.' : 'OPENING: Solution ALREADY EXISTS. 1 character with real name discovers and uses it. 2 sentences. 1 decision.';
-      else if (chapNum===1) guide = lang==='pt' ? 'CONFLITO: CONTINUE A HISTORIA. O protagonista usa a solucao e encontra obstaculo real. 2 frases. 1 escolha.' : 'CONFLICT: CONTINUE THE STORY. Protagonist hits a real obstacle. 2 sentences. 1 choice.';
-      else guide = lang==='pt' ? 'VIRADA: CONTINUE A HISTORIA. A escolha teve consequencias. Algo muda. 2 frases. 1 decisao final.' : 'TWIST: CONTINUE THE STORY. Choice had consequences. Something changes. 2 sentences. 1 final decision.';
+      if (isFinal) guide = lang==='pt' ? 'DESFECHO: 2 frases de impacto real. 1 veredicto.' : 'OUTCOME: 2 impact sentences. 1 verdict.';
+      else if (chapNum===0) guide = lang==='pt' ? 'ABERTURA: 1 personagem com nome real descobre e usa pela primeira vez. 2 frases. 1 decisao.' : 'OPENING: 1 character with real name discovers and uses it. 2 sentences. 1 decision.';
+      else if (chapNum===1) guide = lang==='pt' ? 'CONFLITO: CONTINUE. Obstaculo real. 2 frases. 1 escolha.' : 'CONFLICT: CONTINUE. Real obstacle. 2 sentences. 1 choice.';
+      else guide = lang==='pt' ? 'VIRADA: CONTINUE. Consequencias. 2 frases. 1 decisao final.' : 'TWIST: CONTINUE. Consequences. 2 sentences. 1 final decision.';
     }
     var rpgContext = isSolve()
-      ? (lang==='pt'
-        ? 'Problema real: ' + state.spark + '\nSolucao sendo testada: ' + state.outcome
-        : 'Real problem: ' + state.spark + '\nSolution being tested: ' + state.outcome)
-      : (lang==='pt'
-        ? 'Ideia: ' + state.spark + '\nHipotese em acao: ' + state.outcome
-        : 'Idea: ' + state.spark + '\nHypothesis in action: ' + state.outcome);
+      ? (lang==='pt' ? 'Problema: ' + state.spark + '\nSolucao: ' + state.outcome : 'Problem: ' + state.spark + '\nSolution: ' + state.outcome)
+      : (lang==='pt' ? 'Ideia: ' + state.spark + '\nHipotese: ' + state.outcome : 'Idea: ' + state.spark + '\nHypothesis: ' + state.outcome);
     var p = (lang==='pt'
-      ? 'Voce e um narrador cinematografico. Narre capitulo ' + (chapNum+1) + '/4. A solucao JA EXISTE — simule o uso real com tensao genuina.\n\n' + rpgContext
-      : 'You are a cinematic narrator. Narrate chapter ' + (chapNum+1) + '/4. Solution ALREADY EXISTS — simulate real usage with genuine tension.\n\n' + rpgContext)
-      + '\n' + storyCtx + '\n' + histCtx + '\n\n' + guide
+      ? 'Narrador cinematografico. Capitulo ' + (chapNum+1) + '/4. Solucao JA EXISTE.\n\n' + rpgContext
+      : 'Cinematic narrator. Chapter ' + (chapNum+1) + '/4. Solution ALREADY EXISTS.\n\n' + rpgContext)
       + '\n' + storyCtx + '\n' + histCtx + '\n\n' + guide
       + (lang==='pt'
-        ? '\n\nMax 60 palavras na narrativa. Responda SEMPRE em portugues. CRITICO: retorne SOMENTE o JSON, sem texto antes ou depois. {"narrative":"2 frases","isFinal":' + isFS + ',"verdict":' + (isFinal?'"1 frase"':'null') + ',"choices":' + choicesStr + '}'
-        : '\n\nMax 60 words. CRITICAL: return ONLY JSON, no text before or after. {"narrative":"2 sentences","isFinal":' + isFS + ',"verdict":' + (isFinal?'"1 sentence"':'null') + ',"choices":' + choicesStr + '}');
+        ? '\n\nMax 60 palavras. Responda em portugues. SOMENTE JSON: {"narrative":"texto","isFinal":' + isFS + ',"verdict":' + (isFinal?'"veredicto"':'null') + ',"choices":' + choicesStr + '}'
+        : '\n\nMax 60 words. ONLY JSON: {"narrative":"text","isFinal":' + isFS + ',"verdict":' + (isFinal?'"verdict"':'null') + ',"choices":' + choicesStr + '}');
 
     var sc = await api(p, 350);
-    story.push(sc.narrative);
+    window._ch = sc.choices || [];
+    story.push(sc.narrative || '');
 
-    var pars = sc.narrative.split('\n\n').filter(function(x){ return x.trim(); }).map(function(x){ return '<p>' + x.trim() + '</p>'; }).join('');
+    var pars = (sc.narrative||'').split('\n\n').filter(function(x){ return x.trim(); }).map(function(x){ return '<p>' + x.trim() + '</p>'; }).join('');
     var vb = sc.verdict ? '<div style="background:rgba(180,79,255,0.08);border:1px solid rgba(180,79,255,0.2);padding:14px 16px;margin-bottom:16px;font-size:14px;color:var(--text);font-style:italic;line-height:1.6">&#9672; ' + sc.verdict + '</div>' : '';
     var updDots = chaps.map(function(c, i) {
       var cls = i < chapNum ? 'done' : (i === chapNum ? 'active' : '');
       return '<div class="chap-dot ' + cls + '"></div>';
     }).join('');
-    var ch = (!isFinal && sc.choices) ? '<div class="choices">' + sc.choices.map(function(c, ci) {
+    var ch = (!isFinal && sc.choices && sc.choices.length) ? '<div class="choices">' + sc.choices.map(function(c, ci) {
       return '<button class="choice" onclick="choose(' + ci + ')"><span class="cletter">' + c.letter + '</span><span>' + c.text + '</span></button>';
     }).join('') + '</div>' : '';
     var nb = isFinal ? '<div style="margin-top:8px;display:flex;flex-direction:column;gap:8px">'
@@ -1785,7 +1780,9 @@ async function showRPG(a) {
       + '<div class="chap-strip"><div class="chap-dots">' + updDots + '</div><div class="chap-label">' + chaps[Math.min(chapNum,3)] + '</div></div>'
       + pills + '<div class="rpg-scene">' + pars + '</div>' + vb + ch + nb + '</div></div>';
   } catch(e) {
-    errScreen(a, 'ERRO CAP. ' + (chapNum+1) + '.', function(){ showRPG(a); }, function(){ phase='outcome'; render(); });
+    window._lastRPGError = e.message;
+    var errDetail = e.message ? (' — ' + e.message.substring(0, 100)) : '';
+    errScreen(a, 'ERRO CAP. ' + (chapNum+1) + errDetail, function(){ showRPG(a); }, function(){ phase='outcome'; render(); });
   }
 }
 
