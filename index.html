@@ -2097,7 +2097,7 @@ async function api(prompt, maxTokens) {
   var res = await fetch('/.netlify/functions/ai', {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
-    body: JSON.stringify({model:'claude-sonnet-4-60250514', max_tokens:maxTokens, messages:[{role:'user',content:prompt}]})
+    body: JSON.stringify({model:'claude-sonnet-4-6', max_tokens:maxTokens, messages:[{role:'user',content:prompt}]})
   });
   var d = await res.json();
   if (!res.ok) throw new Error('API error ' + res.status + ': ' + JSON.stringify(d));
@@ -2128,7 +2128,7 @@ async function apiSearch(prompt, maxTokens) {
       method: 'POST',
       headers: {'Content-Type':'application/json'},
       body: JSON.stringify({
-        model:'claude-sonnet-4-60250514', max_tokens:maxTokens,
+        model:'claude-sonnet-4-6', max_tokens:maxTokens,
         messages:[{role:'user',content:prompt}]
       })
     });
@@ -2146,7 +2146,7 @@ function _fetchSourcesInBackground(prompt) {
     method: 'POST',
     headers: {'Content-Type':'application/json'},
     body: JSON.stringify({
-      model:'claude-sonnet-4-60250514', max_tokens:600,
+      model:'claude-sonnet-4-6', max_tokens:600,
       tools:[{"type":"web_search_20250305","name":"web_search"}],
       messages:[{role:'user',content:prompt}]
     })
